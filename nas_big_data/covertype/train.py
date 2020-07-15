@@ -5,13 +5,14 @@ KMP_BLOCK_TIME=0
 horovodrun -np 4 python -m deephyper.benchmark.nas.covertype.train
 """
 
-from deephyper.benchmark.nas.covertype.problem import Problem
+from nas_big_data.covertype.problem_agebov3 import Problem
 from deephyper.search.nas.model.run.horovod import run
 
 config = Problem.space
 
 config["hyperparameters"]["num_epochs"] = 100
 config["hyperparameters"]["learning_rate"] = 0.00333302975
+config["hyperparameters"]["batch_size"] = 256
 
 
 config["arch_seq"] = [
