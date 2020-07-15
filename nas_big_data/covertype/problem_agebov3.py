@@ -16,11 +16,11 @@ Problem.hyperparameters(
     batch_size=[32, 64, 128, 256, 512, 1024],
     learning_rate=(0.001, 0.1, "log-uniform"),
     optimizer="adam",
-    num_epochs=100,
+    num_epochs=100,  # maximal bound
     verbose=0,
     callbacks=dict(
         CSVExtendedLogger=dict(),
-        TimeStopping=dict(seconds=10),
+        TimeStopping=dict(seconds=460),
         EarlyStopping=dict(
             monitor="val_acc", min_delta=0, mode="max", verbose=0, patience=5
         ),
