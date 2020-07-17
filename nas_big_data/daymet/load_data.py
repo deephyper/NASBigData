@@ -1,41 +1,66 @@
-import os
+"""
+Data from Daymet at:
+https://daac.ornl.gov/cgi-bin/dsviewer.pl?ds_id=1328
+
+requires:
+pip install netCDF4
+"""
+
 import numpy as np
+import matplotlib.pyplot as plt
+import os
+import time
 
-np.random.seed(2018)
+HERE = os.path.dirname(os.path.abspath(__file__))
 
-def load_data(dim=10, a=-50, b=50, prop=0.80, size=10000):
-    """Generate a random distribution of data for polynome_2 function: -SUM(X**2) where "**" is an element wise operator in the continuous range [a, b].
 
-    Args:
-        dim (int): size of input vector for the polynome_2 function.
-        a (int): minimum bound for all X dimensions.
-        b (int): maximum bound for all X dimensions.
-        prop (float): a value between [0., 1.] indicating how to split data between training set and validation set. `prop` corresponds to the ratio of data in training set. `1.-prop` corresponds to the amount of data in validation set.
-        size (int): amount of data to generate. It is equal to `len(training_data)+len(validation_data).
+def load_data():
+    fname = os.path.join(HERE, "daymet_v3_tmax_2014_na_tmax.npy")
+    # data = np.load(fname)[0:100]  # OOM when we use 365 days
+    data = np.load(fname)[:20]
 
-    Returns:
-        tuple(tuple(ndarray, ndarray), tuple(ndarray, ndarray)): of Numpy arrays: `(train_X, train_y), (valid_X, valid_y)`.
-    """
+    # Shape data into channel based format
+    num_days = np.shape(data)[0]
+    window_length = 7
 
-    def polynome_2(x):
-        return -sum([x_i**2 for x_i in x])
+    print(f"Loaded {num_days} days with a window length of size {window_length}")
 
-    d = b - a
-    x = np.array([a + np.random.random(dim) * d for i in range(size)])
-    y = np.array([[polynome_2(v)] for v in x])
+    input_array = np.zeros(
+        shape=(
+            num_days - 2 * window_length,
+            np.shape(data)[1],
+            np.shape(data)[2],
+            1,
+            window_length,
+        )
+    )
+    output_array = np.zeros(
+        shape=(
+            num_days - 2 * window_length,
+            np.shape(data)[1],
+            np.shape(data)[2],
+            1,
+            window_length,
+        )
+    )
 
-    sep_index = int(prop * size)
-    train_X = x[:sep_index]
-    train_y = y[:sep_index]
+    # Shovel data into our arrays
+    sample = 0
+    for i in range(0, num_days - 2 * window_length):
+        input_array[sample, :, :, 0, :] = np.moveaxis(
+            data[i : i + window_length, :, :], source=0, destination=2
+        )
+        output_array[sample, :, :, 0, :] = np.moveaxis(
+            data[i + window_length : i + 2 * window_length, :, :], source=0, destination=2
+        )
+        sample += 1
 
-    valid_X = x[sep_index:]
-    valid_y = y[sep_index:]
+    print("Dataset shape for ConvLSTM2D interface")
+    print(np.shape(input_array))
+    print(np.shape(output_array))
 
-    print(f'train_X shape: {np.shape(train_X)}')
-    print(f'train_y shape: {np.shape(train_y)}')
-    print(f'valid_X shape: {np.shape(valid_X)}')
-    print(f'valid_y shape: {np.shape(valid_y)}')
-    return (train_X, train_y), (valid_X, valid_y)
+    return (input_array, output_array), (input_array, output_array)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     load_data()

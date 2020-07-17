@@ -6,7 +6,7 @@ Problem = NaProblem(seed=2019)
 
 Problem.load_data(load_data)
 
-Problem.search_space(create_conv_lstm_search_space, num_layers=10)
+Problem.search_space(create_conv_lstm_search_space, num_layers=2)
 
 Problem.hyperparameters(
     batch_size=256,
