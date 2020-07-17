@@ -43,8 +43,8 @@ def add_convlstm_oplayer_(node, units):
 
 
 def create_conv_lstm_search_space(
-    input_shape=(808, 782, 1, 7),
-    output_shape=(808, 782, 1, 7),
+    input_shape=(7, 808, 782, 1),
+    output_shape=(7, 808, 782, 1),
     num_layers=10,
     *args,
     **kwargs,
@@ -101,7 +101,7 @@ def test_create_search_space():
     print("The sampled_neural_network.png file has been generated.")
 
     N = 3
-    shape = (808, 782, 1, 7)
+    shape = (7, 808, 782, 1)
 
     dummy_data = np.random.rand(N, *shape)
     y = model.predict(dummy_data)

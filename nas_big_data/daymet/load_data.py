@@ -28,31 +28,29 @@ def load_data():
     input_array = np.zeros(
         shape=(
             num_days - 2 * window_length,
+            window_length,
             np.shape(data)[1],
             np.shape(data)[2],
             1,
-            window_length,
         )
     )
     output_array = np.zeros(
         shape=(
             num_days - 2 * window_length,
+            window_length,
             np.shape(data)[1],
             np.shape(data)[2],
             1,
-            window_length,
         )
     )
 
     # Shovel data into our arrays
     sample = 0
     for i in range(0, num_days - 2 * window_length):
-        input_array[sample, :, :, 0, :] = np.moveaxis(
-            data[i : i + window_length, :, :], source=0, destination=2
-        )
-        output_array[sample, :, :, 0, :] = np.moveaxis(
-            data[i + window_length : i + 2 * window_length, :, :], source=0, destination=2
-        )
+        input_array[sample, :, :, :, 0] = data[i : i + window_length, :, :]
+        output_array[sample, :, :, :, 0] = data[
+            i + window_length : i + 2 * window_length, :, :
+        ]
         sample += 1
 
     print("Dataset shape for ConvLSTM2D interface")
