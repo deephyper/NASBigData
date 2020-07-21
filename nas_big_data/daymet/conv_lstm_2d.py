@@ -17,17 +17,18 @@ from deephyper.search.nas.model.space.op.op1d import Identity
 def add_convlstm_to_(node):
     node.add_op(Identity())  # we do not want to create a layer in this case
     activations = [None, tf.nn.swish, tf.nn.relu, tf.nn.tanh, tf.nn.sigmoid]
-    for filters in range(16, 97, 16):
-        for activation in activations:
-            node.add_op(
-                tf.keras.layers.ConvLSTM2D(
-                    filters=filters,
-                    kernel_size=1,
-                    activation=activation,
-                    padding="same",
-                    return_sequences=True,
-                )
+    # for filters in range(16, 97, 16):
+    filters = 8
+    for activation in activations:
+        node.add_op(
+            tf.keras.layers.ConvLSTM2D(
+                filters=filters,
+                kernel_size=1,
+                activation=activation,
+                padding="same",
+                return_sequences=True,
             )
+        )
 
 
 def add_convlstm_oplayer_(node, units):
