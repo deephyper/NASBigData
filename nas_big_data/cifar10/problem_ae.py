@@ -1,7 +1,5 @@
-import traceback
-
-from deephyper.benchmark.nas.covertype.load_data import load_data
 from deephyper.problem import NaProblem
+from nas_big_data.cifar10.load_data import load_data
 from nas_big_data.cifar10.search_space import create_search_space
 
 # from deephyper.search.nas.model.preprocessing import minmaxstdscaler

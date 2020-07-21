@@ -1,36 +1,127 @@
 import collections
+from itertools import cycle
 
 import tensorflow as tf
 
 from deephyper.search.nas.model.space import AutoKSearchSpace
 from deephyper.search.nas.model.space.node import ConstantNode, VariableNode, MimeNode
 from deephyper.search.nas.model.space.op.basic import Tensor
+from deephyper.search.nas.model.space.op.cnn import (
+    Conv2D,
+    AvgPool2D,
+    MaxPool2D,
+    SeparableConv2D,
+)
 from deephyper.search.nas.model.space.op.connect import Connect
-from deephyper.search.nas.model.space.op.merge import AddByProjecting
+from deephyper.search.nas.model.space.op.merge import AddByPadding, Concatenate
 from deephyper.search.nas.model.space.op.op1d import Dense, Identity
 
-# from deephyper.search.nas.model.space.op.cnn import
-from deephyper.search.nas.model.space.op.cnn import Convolution2D
+
+normal_nodes = []
+cycle_normal_nodes = cycle(normal_nodes)
+
+reduction_nodes = []
+cycle_reduction_nodes = cycle(reduction_nodes)
 
 
-def swish(x):
-    return x * tf.nn.sigmoid(x)
+def generate_conv_node(strides, mime=False):
+    if mime:
+        if strides > 1:
+            node = MimeNode(next(cycle_reduction_nodes))
+        else:
+            node = MimeNode(next(cycle_normal_nodes))
+    else:
+        node = VariableNode(name="ConvNode")
+        if strides > 1:
+            reduction_nodes.append(node)
+        else:
+            normal_nodes.append(node)
+    node.add_op(Identity())
+    node.add_op(Conv2D(filters=8, kernel_size=(1, 1), strides=strides, padding="same"))
+    node.add_op(Conv2D(filters=8, kernel_size=(3, 3), strides=strides, padding="same"))
+    node.add_op(Conv2D(filters=8, kernel_size=(5, 5), strides=strides, padding="same"))
+    node.add_op(AvgPool2D(pool_size=(3, 3), strides=strides, padding="same"))
+    node.add_op(MaxPool2D(pool_size=(3, 3), strides=strides, padding="same"))
+    node.add_op(MaxPool2D(pool_size=(5, 5), strides=strides, padding="same"))
+    node.add_op(MaxPool2D(pool_size=(7, 7), strides=strides, padding="same"))
+    node.add_op(
+        SeparableConv2D(kernel_size=(3, 3), filters=8, strides=strides, padding="same")
+    )
+    node.add_op(
+        SeparableConv2D(kernel_size=(5, 5), filters=8, strides=strides, padding="same")
+    )
+    node.add_op(
+        SeparableConv2D(kernel_size=(7, 7), filters=8, strides=strides, padding="same")
+    )
+    if strides == 1:
+        node.add_op(
+            Conv2D(
+                filters=8,
+                kernel_size=(3, 3),
+                strides=strides,
+                padding="same",
+                dilation_rate=2,
+            )
+        )
+    return node
 
 
-def add_dense_to_(node):
-    node.add_op(Identity())  # we do not want to create a layer in this case
+def generate_block(ss, anchor_points, strides=1, mime=False):
 
-    activations = [None, swish, tf.nn.relu, tf.nn.tanh, tf.nn.sigmoid]
-    for units in range(16, 97, 16):
-        for activation in activations:
-            node.add_op(Dense(units=units, activation=activation))
+    # generate block
+    n1 = generate_conv_node(strides=strides, mime=mime)
+    n2 = generate_conv_node(strides=strides, mime=mime)
+    add = ConstantNode(op=AddByPadding(ss, [n1, n2], activation=None))
+
+    if len(anchor_points) == 1:
+        source = anchor_points[0]
+        ss.connect(source, n1)
+        ss.connect(source, n2)
+    else:
+        if mime:
+            if strides > 1:
+                skipco1 = MimeNode(next(cycle_reduction_nodes))
+                skipco2 = MimeNode(next(cycle_reduction_nodes))
+            else:
+                skipco1 = MimeNode(next(cycle_normal_nodes))
+                skipco2 = MimeNode(next(cycle_normal_nodes))
+        else:
+            skipco1 = VariableNode(name="Connexion")
+            skipco2 = VariableNode(name="Connexion")
+            if strides > 1:
+                reduction_nodes.append(skipco1)
+                normal_nodes.append(skipco2)
+            else:
+                normal_nodes.append(skipco1)
+                normal_nodes.append(skipco2)
+        for anchor in anchor_points:
+            skipco1.add_op(Connect(ss, anchor))
+            ss.connect(skipco1, n1)
+
+            skipco2.add_op(Connect(ss, anchor))
+            ss.connect(skipco2, n2)
+    return add
+
+
+def generate_cell(ss, hidden_states, num_blocks=5, strides=1, mime=False):
+    anchor_points = [h for h in hidden_states]
+    boutputs = []
+    for _ in range(num_blocks):
+        bout = generate_block(ss, anchor_points, strides=1, mime=mime)
+        anchor_points.append(bout)
+        boutputs.append(bout)
+
+    concat = ConstantNode(op=Concatenate(ss, boutputs, not_connected=True))
+    return concat
 
 
 def create_search_space(
     input_shape=(32, 32, 3),
     output_shape=(10,),
-    num_blocks=5,
-    num_cells=2,
+    num_blocks=1,
+    normal_cells=1,
+    reduction_cells=1,
+    repetitions=2,
     *args,
     **kwargs,
 ):
@@ -39,37 +130,22 @@ def create_search_space(
     source = prev_input = ss.input_nodes[0]
 
     # look over skip connections within a range of the 3 previous nodes
-    # anchor_points = collections.deque([source], maxlen=3)
+    hidden_states = collections.deque([source], maxlen=2)
 
-    node = ConstantNode(
-        op=Convolution2D(filters=8, kernel_size=(3, 3), strides=1, padding="same")
-    )
-    ss.connect(source, node)
+    for ri in range(repetitions):
+        for nci in range(normal_cells):
+            # generate a normal cell
+            cout = generate_cell(
+                ss, hidden_states, num_blocks, strides=1, mime=ri + nci > 0
+            )
+            hidden_states.append(cout)
 
-    # for _ in range(num_layers):
-    #     vnode = VariableNode()
-    #     add_dense_to_(vnode)
-
-    #     arch.connect(prev_input, vnode)
-
-    #     # * Cell output
-    #     cell_output = vnode
-
-    #     cmerge = ConstantNode()
-    #     cmerge.set_op(AddByProjecting(arch, [cell_output], activation="relu"))
-
-    #     for anchor in anchor_points:
-    #         skipco = VariableNode()
-    #         skipco.add_op(Tensor([]))
-    #         skipco.add_op(Connect(arch, anchor))
-    #         arch.connect(skipco, cmerge)
-
-    #         prev_input = cbn
-    #     else:
-    #         prev_input = cmerge
-
-    #     # ! for next iter
-    #     anchor_points.append(prev_input)
+        for rci in range(reduction_cells):
+            # generate a reduction cell
+            cout = generate_cell(
+                ss, hidden_states, num_blocks, strides=2, mime=ri + rci > 0
+            )
+            hidden_states.append(cout)
 
     return ss
 
@@ -85,6 +161,7 @@ def test_create_search_space():
     search_space = create_search_space()
     ops = [random() for _ in range(search_space.num_nodes)]
     print(ops)
+    print("Search space size: ", search_space.size)
 
     print(f"This search_space needs {len(ops)} choices to generate a neural network.")
 
