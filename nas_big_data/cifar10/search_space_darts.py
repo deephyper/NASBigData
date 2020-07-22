@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from deephyper.search.nas.model.space import AutoKSearchSpace
 from deephyper.search.nas.model.space.node import ConstantNode, VariableNode, MimeNode
-from deephyper.search.nas.model.space.op.basic import Tensor
+from deephyper.search.nas.model.space.op.basic import Tensor, Zero
 from deephyper.search.nas.model.space.op.cnn import (
     Conv2D,
     AvgPool2D,
@@ -37,29 +37,49 @@ def generate_conv_node(strides, mime=False):
         else:
             normal_nodes.append(node)
 
-    padding = "valid" if strides > 1 else "same"
+    padding = "same"
+    node.add_op(Zero())
     node.add_op(Identity())
-    node.add_op(Conv2D(filters=8, kernel_size=(1, 1), strides=strides, padding=padding))
-    node.add_op(Conv2D(filters=8, kernel_size=(3, 3), strides=strides, padding=padding))
-    node.add_op(Conv2D(filters=8, kernel_size=(5, 5), strides=strides, padding=padding))
+    node.add_op(
+        Conv2D(
+            filters=8,
+            kernel_size=(3, 3),
+            strides=strides,
+            padding=padding,
+            activation=tf.nn.relu,
+        )
+    )
+    node.add_op(
+        Conv2D(
+            filters=8,
+            kernel_size=(5, 5),
+            strides=strides,
+            padding=padding,
+            activation=tf.nn.relu,
+        )
+    )
     node.add_op(AvgPool2D(pool_size=(3, 3), strides=strides, padding=padding))
     node.add_op(MaxPool2D(pool_size=(3, 3), strides=strides, padding=padding))
-    node.add_op(MaxPool2D(pool_size=(5, 5), strides=strides, padding=padding))
-    node.add_op(MaxPool2D(pool_size=(7, 7), strides=strides, padding=padding))
     node.add_op(
         SeparableConv2D(kernel_size=(3, 3), filters=8, strides=strides, padding=padding)
     )
     node.add_op(
         SeparableConv2D(kernel_size=(5, 5), filters=8, strides=strides, padding=padding)
     )
-    node.add_op(
-        SeparableConv2D(kernel_size=(7, 7), filters=8, strides=strides, padding=padding)
-    )
     if strides == 1:
         node.add_op(
             Conv2D(
                 filters=8,
                 kernel_size=(3, 3),
+                strides=strides,
+                padding=padding,
+                dilation_rate=2,
+            )
+        )
+        node.add_op(
+            Conv2D(
+                filters=8,
+                kernel_size=(5, 5),
                 strides=strides,
                 padding=padding,
                 dilation_rate=2,
@@ -124,10 +144,10 @@ def generate_cell(ss, hidden_states, num_blocks=5, strides=1, mime=False):
 def create_search_space(
     input_shape=(32, 32, 3),
     output_shape=(10,),
-    num_blocks=3,
-    normal_cells=5,
+    num_blocks=4,
+    normal_cells=3,
     reduction_cells=1,
-    repetitions=4,
+    repetitions=3,
     *args,
     **kwargs,
 ):
@@ -146,12 +166,16 @@ def create_search_space(
             )
             hidden_states.append(cout)
 
-        for rci in range(reduction_cells):
-            # generate a reduction cell
-            cout = generate_cell(
-                ss, hidden_states, num_blocks, strides=2, mime=ri + rci > 0
-            )
-            hidden_states.append(cout)
+        if ri < repetitions - 1:  # we don't want the last cell to be a reduction cell
+            for rci in range(reduction_cells):
+                # generate a reduction cell
+                cout = generate_cell(
+                    ss, hidden_states, num_blocks, strides=2, mime=ri + rci > 0
+                )
+                hidden_states.append(cout)
+
+    out_node = ConstantNode(op=Dense(100, activation=tf.nn.relu))
+    ss.connect(cout, out_node)
 
     return ss
 

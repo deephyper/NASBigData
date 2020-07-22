@@ -1,19 +1,16 @@
 from deephyper.problem import NaProblem
 from nas_big_data.cifar10.load_data import load_data
-from nas_big_data.cifar10.search_space import create_search_space
+from nas_big_data.cifar10.search_space_darts import create_search_space
 
-# from deephyper.search.nas.model.preprocessing import minmaxstdscaler
 
 Problem = NaProblem(seed=2019)
 
 Problem.load_data(load_data)
 
-# Problem.preprocessing(minmaxstdscaler)
-
 Problem.search_space(create_search_space)
 
 Problem.hyperparameters(
-    batch_size=256,
+    batch_size=32,
     learning_rate=0.01,
     optimizer="adam",
     num_epochs=20,
