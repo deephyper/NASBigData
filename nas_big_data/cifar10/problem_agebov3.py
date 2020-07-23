@@ -18,7 +18,7 @@ Problem.hyperparameters(
     verbose=0,
     callbacks=dict(
         CSVExtendedLogger=dict(),
-        TimeStopping=dict(seconds=460),
+        TimeStopping=dict(seconds=1200),
         EarlyStopping=dict(
             monitor="val_acc", min_delta=0, mode="max", verbose=0, patience=5
         ),

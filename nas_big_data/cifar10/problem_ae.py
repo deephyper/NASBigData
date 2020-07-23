@@ -15,7 +15,7 @@ Problem.hyperparameters(
     optimizer="adam",
     num_epochs=20,
     verbose=0,
-    callbacks=dict(CSVExtendedLogger=dict()),
+    callbacks=dict(CSVExtendedLogger=dict(), TimeStopping=dict(seconds=1200)),
 )
 
 Problem.loss("categorical_crossentropy")
