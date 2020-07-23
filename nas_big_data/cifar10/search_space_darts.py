@@ -145,7 +145,7 @@ def create_search_space(
     input_shape=(32, 32, 3),
     output_shape=(10,),
     num_blocks=4,
-    normal_cells=3,
+    normal_cells=2,
     reduction_cells=1,
     repetitions=3,
     *args,

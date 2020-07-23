@@ -2,7 +2,6 @@ from deephyper.problem import NaProblem
 from nas_big_data.cifar10.load_data import load_data
 from nas_big_data.cifar10.search_space_darts import create_search_space
 
-
 Problem = NaProblem(seed=2019)
 
 Problem.load_data(load_data)
@@ -10,8 +9,8 @@ Problem.load_data(load_data)
 Problem.search_space(create_search_space)
 
 Problem.hyperparameters(
-    batch_size=64,
-    learning_rate=0.01,
+    batch_size=[32, 64, 128, 256, 512, 1024],
+    learning_rate=(0.001, 0.1, "log-uniform"),
     optimizer="adam",
     num_epochs=20,
     verbose=0,
