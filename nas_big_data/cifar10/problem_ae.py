@@ -15,7 +15,22 @@ Problem.hyperparameters(
     optimizer="adam",
     num_epochs=20,
     verbose=0,
-    callbacks=dict(CSVExtendedLogger=dict(), TimeStopping=dict(seconds=1200)),
+    callbacks=dict(
+        CSVExtendedLogger=dict(),
+        TimeStopping=dict(seconds=1200),
+        EarlyStopping=dict(
+            monitor="val_acc", min_delta=0, mode="max", verbose=0, patience=5
+        ),
+        ReduceLROnPlateau=dict(patience=4, verbose=0),
+        ModelCheckpoint=dict(
+            monitor="val_acc",
+            mode="max",
+            save_best_only=True,
+            verbose=0,
+            filepath="model.h5",
+            save_weights_only=True,
+        ),
+    ),
 )
 
 Problem.loss("categorical_crossentropy")
