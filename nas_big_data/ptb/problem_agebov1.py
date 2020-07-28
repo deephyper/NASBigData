@@ -2,6 +2,7 @@ from deephyper.problem import NaProblem
 from nas_big_data.ptb.search_space import create_search_space
 from nas_big_data.ptb.load_data import load_data
 
+
 Problem = NaProblem(seed=2019)
 
 Problem.load_data(load_data)
@@ -10,7 +11,7 @@ Problem.search_space(create_search_space, num_layers=5)
 
 Problem.hyperparameters(
     batch_size=32,
-    learning_rate=0.05,
+    learning_rate=(0.001, 0.1, "log-uniform"),
     optimizer="adam",
     num_epochs=100,
     verbose=0,
