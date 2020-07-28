@@ -13,7 +13,7 @@ Problem.hyperparameters(
     batch_size=64,
     learning_rate=0.01,
     optimizer="adam",
-    num_epochs=20,
+    num_epochs=100,
     verbose=0,
     callbacks=dict(
         CSVExtendedLogger=dict(),
