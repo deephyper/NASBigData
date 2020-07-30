@@ -6,7 +6,7 @@ Problem = NaProblem(seed=2019)
 
 Problem.load_data(load_data)
 
-Problem.search_space(create_search_space, num_layers=5)
+Problem.search_space(create_search_space, num_layers=4)
 
 Problem.hyperparameters(
     batch_size=32,

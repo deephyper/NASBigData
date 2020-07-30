@@ -30,7 +30,7 @@ def add_embedding_(node, vocab_size=10000, num_steps=20):
 def create_search_space(
     input_shape=(20,), output_shape=(20,), num_layers=5, *args, **kwargs
 ):
-    vocab_size = 1000
+    vocab_size = 10000
     ss = KSearchSpace(input_shape, (*output_shape, vocab_size))
     source = ss.input_nodes[0]
 
