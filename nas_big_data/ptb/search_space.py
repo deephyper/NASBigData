@@ -23,7 +23,7 @@ def add_lstm_seq_(node):
 
 def add_embedding_(node, vocab_size=10000, num_steps=20):
     # node.add_op(Identity())
-    for emb_size in [10, 20, 50, 100, 200, 500, 1000]:
+    for emb_size in range(50, 250, 10):
         node.add_op(Embedding(vocab_size, emb_size, input_length=num_steps))
 
 
