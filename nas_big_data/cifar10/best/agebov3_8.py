@@ -13,6 +13,7 @@ config = Problem.space
 config["hyperparameters"]["num_epochs"] = 100
 config["hyperparameters"]["learning_rate"] = 0.001061618285394656
 config["hyperparameters"]["batch_size"] = 128  # 1 rank
+config["hyperparameters"]["callbacks"].pop("TimeStopping")
 
 
 config["arch_seq"] = [
