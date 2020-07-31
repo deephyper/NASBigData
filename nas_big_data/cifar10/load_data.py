@@ -7,19 +7,35 @@ from deephyper.benchmark.datasets.util import cache_load_data
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
-@cache_load_data("/dev/shm/cifar10.npz")
-def load_data_cache_v1(verbose: bool = True):
-    import torchvision.transforms as transforms
+def load_cifar10(with_test: bool = False):
     import tensorflow as tf
+
+    if with_test:
+        (X_train, y_train), (X_test, y_test) = tf.keras.datasets.cifar10.load_data()
+        return (X_train, y_train), (X_test, y_test)
+    else:
+        (X_train, y_train), _ = tf.keras.datasets.cifar10.load_data()
+        return (X_train, y_train)
+
+
+@cache_load_data("/dev/shm/cifar10.npz")
+def load_data_cache_v1(verbose: bool = True, use_test: bool = False):
+    import torchvision.transforms as transforms
     from sklearn import model_selection, preprocessing
 
     random_state = np.random.RandomState(seed=42)
 
-    (X_train, y_train), _ = tf.keras.datasets.cifar10.load_data()
+    if use_test:
+        (X_train, y_train), (X_test, y_test) = load_cifar10(with_test=True)
 
-    X_train, X_valid, y_train, y_valid = model_selection.train_test_split(
-        X_train, y_train, test_size=0.33, shuffle=True, random_state=random_state
-    )
+        X_valid, y_valid = X_test, y_test
+
+    else:
+        (X_train, y_train) = load_cifar10(with_test=False)
+
+        X_train, X_valid, y_train, y_valid = model_selection.train_test_split(
+            X_train, y_train, test_size=0.33, shuffle=True, random_state=random_state
+        )
 
     prepro_output = preprocessing.OneHotEncoder()
     y_train = y_train.reshape(-1, 1)
@@ -56,9 +72,14 @@ def load_data_cache_v1(verbose: bool = True):
 
 
 @cache_load_data("/dev/shm/cifar10.npz")
-def load_data_cache_v2(verbose: bool = True):
-    with open(os.path.join(HERE, "cifar10.npz"), "rb") as fp:
-        data = {k: arr for k, arr in np.load(fp).items()}
+def load_data_cache_v2(verbose: bool = True, use_test=False):
+    if use_test:
+        print("!!! USING TEST DATA !!!")
+        with open(os.path.join(HERE, "cifar10_test.npz"), "rb") as fp:
+            data = {k: arr for k, arr in np.load(fp).items()}
+    else:
+        with open(os.path.join(HERE, "cifar10.npz"), "rb") as fp:
+            data = {k: arr for k, arr in np.load(fp).items()}
     print(f"X_train shape: {np.shape(data['X_train'])}")
     print(f"y_train shape: {np.shape(data['y_train'])}")
     print(f"X_valid shape: {np.shape(data['X_valid'])}")
@@ -66,9 +87,10 @@ def load_data_cache_v2(verbose: bool = True):
     return (data["X_train"], data["y_train"]), (data["X_valid"], data["y_valid"])
 
 
-def load_data():
-    return load_data_cache_v2()
+def load_data(use_test=False):
+    return load_data_cache_v2(use_test=use_test)
 
 
 if __name__ == "__main__":
-    load_data()
+    load_data(use_test=True)
+    # load_data_cache_v1(use_test=True)
