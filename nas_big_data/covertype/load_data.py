@@ -7,13 +7,22 @@ from deephyper.search.nas.model.preprocessing import minmaxstdscaler
 
 
 @cache_load_data("/dev/shm/covertype.npz")
-def load_data_cache():
+def load_data_cache(use_test=False):
     # Random state
     random_state = np.random.RandomState(seed=42)
 
-    (X_train, y_train), (X_valid, y_valid), _ = covertype.load_data(
-        random_state=random_state
-    )
+    if use_test:
+        print("!!! USING TEST DATA !!!")
+        (X_train, y_train), (X_valid, y_valid), (X_test, y_test) = covertype.load_data(
+            random_state=random_state
+        )
+        X_train = np.concatenate([X_train, X_valid])
+        y_train = np.concatenate([y_train, y_valid])
+        X_valid, y_valid = X_test, y_test
+    else:
+        (X_train, y_train), (X_valid, y_valid), _ = covertype.load_data(
+            random_state=random_state
+        )
 
     prepro_output = preprocessing.OneHotEncoder()
     y_train = y_train.reshape(-1, 1)
@@ -32,8 +41,8 @@ def load_data_cache():
     return (X_train, y_train), (X_valid, y_valid)
 
 
-def load_data():
-    return load_data_cache()
+def load_data(use_test=False):
+    return load_data_cache(use_test=use_test)
 
 
 def test_baseline():
@@ -76,5 +85,6 @@ def test_baseline():
 
 
 if __name__ == "__main__":
-    load_data()
+    load_data(use_test=True)
+    load_data(use_test=False)
     # test_baseline()
