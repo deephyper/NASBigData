@@ -7,56 +7,53 @@ horovodrun -np 4 python -m deephyper.benchmark.nas.covertype.train
 
 from nas_big_data.covertype.problem_ae import Problem
 from deephyper.search.nas.model.run.horovod import run
-from nas_big_data.covertype.load_data import load_data
 
-Problem.load_data(load_data, use_test=True)
 config = Problem.space
 
 config["hyperparameters"]["num_epochs"] = 100
-config["hyperparameters"]["learning_rate"] = 0.001392459853203709
-config["hyperparameters"]["batch_size"] = 256  # 1 rank
+config["hyperparameters"]["learning_rate"] = 0.0015041914104249976
+config["hyperparameters"]["batch_size"] = 128  # 8 ranks
 config["hyperparameters"]["callbacks"]["ReduceLROnPlateau"] = dict(patience=4, verbose=0)
-config["hyperparameters"]["verbose"] = 1
 
 
 config["arch_seq"] = [
-    9,
-    1,
-    30,
-    1,
-    1,
-    28,
-    1,
-    1,
+    22,
     0,
-    24,
+    11,
     0,
     0,
-    1,
-    23,
+    17,
     0,
-    1,
+    0,
+    0,
+    27,
+    0,
+    0,
     0,
     27,
     1,
     1,
-    1,
-    18,
+    0,
     0,
     1,
     1,
-    2,
+    0,
+    29,
+    0,
+    0,
+    0,
+    11,
+    1,
+    1,
+    1,
+    17,
+    1,
     0,
     1,
-    1,
-    14,
-    1,
+    16,
     1,
     0,
-    20,
-    1,
     0,
-    1,
 ]
 
 run(config)
