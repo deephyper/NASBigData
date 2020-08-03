@@ -18,6 +18,7 @@ def load_cifar10(with_test: bool = False):
         return (X_train, y_train)
 
 
+# @cache_load_data(os.path.join(HERE, "cifar10_test.npz"))
 @cache_load_data("/dev/shm/cifar10.npz")
 def load_data_cache_v1(verbose: bool = True, use_test: bool = False):
     import torchvision.transforms as transforms
@@ -48,8 +49,8 @@ def load_data_cache_v1(verbose: bool = True, use_test: bool = False):
     STD = [0.24703233, 0.24348505, 0.26158768]
     transf_train = [
         transforms.ToPILImage(),
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
+        # transforms.RandomCrop(32, padding=4),
+        # transforms.RandomHorizontalFlip(),
     ]
     transf_val = []
     normalize = [transforms.ToTensor(), transforms.Normalize(MEAN, STD)]
