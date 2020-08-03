@@ -15,7 +15,7 @@ def augment(inputs, outputs):
     inputs["input_0"] = tf.image.resize_with_crop_or_pad(inputs["input_0"], 32, 32)
     inputs["input_0"] = tf.image.random_flip_left_right(inputs["input_0"])
 
-    return image, label
+    return inputs, outputs
 
 
 Problem.augment(augment)
