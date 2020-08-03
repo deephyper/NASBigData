@@ -7,6 +7,19 @@ Problem = NaProblem(seed=2019)
 
 Problem.load_data(load_data)
 
+
+def augment(inputs, outputs):
+    import tensorflow as tf
+
+    inputs["input_0"] = tf.image.random_crop(inputs["input_0"], [28, 28, 3])
+    inputs["input_0"] = tf.image.resize_with_crop_or_pad(inputs["input_0"], 32, 32)
+    inputs["input_0"] = tf.image.random_flip_left_right(inputs["input_0"])
+
+    return image, label
+
+
+Problem.augment(augment)
+
 Problem.search_space(create_search_space)
 
 Problem.hyperparameters(
