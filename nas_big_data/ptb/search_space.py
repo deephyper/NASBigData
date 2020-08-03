@@ -63,11 +63,12 @@ def create_search_space(
         prev_input = cmerge
         anchor_points.append(prev_input)
 
-    out = ConstantNode(
-        op=tf.keras.layers.TimeDistributed(
-            tf.keras.layers.Dense(units=vocab_size, activation="softmax")
-        )
-    )
+    # out = ConstantNode(
+    #     op=tf.keras.layers.TimeDistributed(
+    #         tf.keras.layers.Dense(units=vocab_size, activation="softmax")
+    #     )
+    # )
+    out = ConstantNode(op=tf.keras.layers.Dense(units=vocab_size, activation="softmax"))
     ss.connect(prev_input, out)
 
     return ss
@@ -81,7 +82,7 @@ def test_create_search_space():
     import tensorflow as tf
     import numpy as np
 
-    search_space = create_search_space(num_layers=2)
+    search_space = create_search_space(num_layers=4)
     ops = [random() for _ in range(search_space.num_nodes)]
     print(ops)
 

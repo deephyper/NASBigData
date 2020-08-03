@@ -140,4 +140,4 @@ def load_data(debug=False):
 
 
 if __name__ == "__main__":
-    load_data(debug=True)
+    load_data(debug=False)
