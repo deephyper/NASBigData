@@ -14,7 +14,7 @@ from deephyper.search.nas.model.space.op.cnn import (
 )
 from deephyper.search.nas.model.space.op.connect import Connect
 from deephyper.search.nas.model.space.op.merge import AddByPadding, Concatenate
-from deephyper.search.nas.model.space.op.op1d import Dense, Identity
+from deephyper.search.nas.model.space.op.op1d import Dense, Identity, Dropout
 
 
 normal_nodes = []
@@ -24,7 +24,7 @@ reduction_nodes = []
 cycle_reduction_nodes = cycle(reduction_nodes)
 
 
-def generate_conv_node(strides, mime=False):
+def generate_conv_node(strides, mime=False, first=False):
     if mime:
         if strides > 1:
             node = MimeNode(next(cycle_reduction_nodes), name="Conv")
@@ -38,7 +38,10 @@ def generate_conv_node(strides, mime=False):
             normal_nodes.append(node)
 
     padding = "same"
-    node.add_op(Zero())
+    if first:
+        node.add_op(Identity())
+    else:
+        node.add_op(Zero())
     node.add_op(Identity())
     node.add_op(
         Conv2D(
@@ -88,56 +91,62 @@ def generate_conv_node(strides, mime=False):
     return node
 
 
-def generate_block(ss, anchor_points, strides=1, mime=False):
+def generate_block(ss, anchor_points, strides=1, mime=False, first=False):
 
     # generate block
-    n1 = generate_conv_node(strides=strides, mime=mime)
+    n1 = generate_conv_node(strides=strides, mime=mime, first=first)
     n2 = generate_conv_node(strides=strides, mime=mime)
     add = ConstantNode(op=AddByPadding(ss, [n1, n2], activation=None))
 
-    if len(anchor_points) == 1:
-        source = anchor_points[0]
+    if first:
+        source = anchor_points[-1]
+        print(f"{source} -> {n1}")
         ss.connect(source, n1)
-        ss.connect(source, n2)
-    else:
-        if mime:
-            if strides > 1:
+
+    if mime:
+        if strides > 1:
+            if not first:
                 src_node = next(cycle_reduction_nodes)
                 skipco1 = MimeNode(src_node, name="SkipCo1")
-                src_node = next(cycle_reduction_nodes)
-                skipco2 = MimeNode(src_node, name="SkipCo2")
-            else:
-                src_node = next(cycle_normal_nodes)
-                skipco1 = MimeNode(src_node, name="SkipCo1")
-                src_node = next(cycle_normal_nodes)
-                skipco2 = MimeNode(src_node, name="SkipCo2")
+            src_node = next(cycle_reduction_nodes)
+            skipco2 = MimeNode(src_node, name="SkipCo2")
         else:
+            if not first:
+                src_node = next(cycle_normal_nodes)
+                skipco1 = MimeNode(src_node, name="SkipCo1")
+            src_node = next(cycle_normal_nodes)
+            skipco2 = MimeNode(src_node, name="SkipCo2")
+    else:
+        if not first:
             skipco1 = VariableNode(name="SkipCo1")
-            skipco2 = VariableNode(name="SkipCo2")
-            if strides > 1:
+        skipco2 = VariableNode(name="SkipCo2")
+        if strides > 1:
+            if not first:
                 reduction_nodes.append(skipco1)
-                reduction_nodes.append(skipco2)
-            else:
+            reduction_nodes.append(skipco2)
+        else:
+            if not first:
                 normal_nodes.append(skipco1)
-                normal_nodes.append(skipco2)
-        for anchor in anchor_points:
+            normal_nodes.append(skipco2)
+    for anchor in anchor_points:
+        if not first:
             skipco1.add_op(Connect(ss, anchor))
             ss.connect(skipco1, n1)
 
-            skipco2.add_op(Connect(ss, anchor))
-            ss.connect(skipco2, n2)
+        skipco2.add_op(Connect(ss, anchor))
+        ss.connect(skipco2, n2)
     return add
 
 
 def generate_cell(ss, hidden_states, num_blocks=5, strides=1, mime=False):
     anchor_points = [h for h in hidden_states]
     boutputs = []
-    for _ in range(num_blocks):
-        bout = generate_block(ss, anchor_points, strides=1, mime=mime)
+    for i in range(num_blocks):
+        bout = generate_block(ss, anchor_points, strides=1, mime=mime, first=i == 0)
         anchor_points.append(bout)
         boutputs.append(bout)
 
-    concat = ConstantNode(op=Concatenate(ss, boutputs, not_connected=True))
+    concat = ConstantNode(op=Concatenate(ss, boutputs))
     return concat
 
 
@@ -174,8 +183,18 @@ def create_search_space(
                 )
                 hidden_states.append(cout)
 
-    out_node = ConstantNode(op=Dense(100, activation=tf.nn.relu))
-    ss.connect(cout, out_node)
+    # out_node = ConstantNode(op=Dense(100, activation=tf.nn.relu))
+    out_dense = VariableNode()
+    out_dense.add_op(Identity())
+    for units in [10, 20, 50, 100, 200, 500, 1000]:
+        out_dense.add_op(Dense(units, activation=tf.nn.relu))
+    ss.connect(cout, out_dense)
+
+    out_dropout = VariableNode()
+    out_dropout.add_op(Identity())
+    for drop_rate in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.8]:
+        out_dropout.add_op(Dropout(rate=drop_rate))
+    ss.connect(out_dense, out_dropout)
 
     return ss
 
@@ -190,6 +209,8 @@ def test_create_search_space():
 
     search_space = create_search_space()
     ops = [random() for _ in range(search_space.num_nodes)]
+    ops = [0 for _ in range(search_space.num_nodes)]
+
     print(ops)
     print("Search space size: ", search_space.size)
 
