@@ -100,7 +100,6 @@ def generate_block(ss, anchor_points, strides=1, mime=False, first=False):
 
     if first:
         source = anchor_points[-1]
-        print(f"{source} -> {n1}")
         ss.connect(source, n1)
 
     if mime:
