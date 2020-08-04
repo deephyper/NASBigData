@@ -11,9 +11,10 @@ from nas_big_data.cifar10.search_space_darts import create_search_space
 from deephyper.search.nas.model.run.horovod import run
 
 Problem.load_data(load_data, use_test=True)
-config = Problem.space
 
 Problem.search_space(create_search_space, num_filters=32)
+
+config = Problem.space
 
 config["hyperparameters"]["num_epochs"] = 100
 config["hyperparameters"]["learning_rate"] = 0.0011612519937434927
