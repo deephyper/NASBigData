@@ -24,7 +24,7 @@ reduction_nodes = []
 cycle_reduction_nodes = cycle(reduction_nodes)
 
 
-def generate_conv_node(strides, mime=False, first=False):
+def generate_conv_node(strides, mime=False, first=False, num_filters=8):
     if mime:
         if strides > 1:
             node = MimeNode(next(cycle_reduction_nodes), name="Conv")
@@ -45,7 +45,7 @@ def generate_conv_node(strides, mime=False, first=False):
     node.add_op(Identity())
     node.add_op(
         Conv2D(
-            filters=8,
+            filters=num_filters,
             kernel_size=(3, 3),
             strides=strides,
             padding=padding,
@@ -54,7 +54,7 @@ def generate_conv_node(strides, mime=False, first=False):
     )
     node.add_op(
         Conv2D(
-            filters=8,
+            filters=num_filters,
             kernel_size=(5, 5),
             strides=strides,
             padding=padding,
@@ -64,15 +64,19 @@ def generate_conv_node(strides, mime=False, first=False):
     node.add_op(AvgPool2D(pool_size=(3, 3), strides=strides, padding=padding))
     node.add_op(MaxPool2D(pool_size=(3, 3), strides=strides, padding=padding))
     node.add_op(
-        SeparableConv2D(kernel_size=(3, 3), filters=8, strides=strides, padding=padding)
+        SeparableConv2D(
+            kernel_size=(3, 3), filters=num_filters, strides=strides, padding=padding
+        )
     )
     node.add_op(
-        SeparableConv2D(kernel_size=(5, 5), filters=8, strides=strides, padding=padding)
+        SeparableConv2D(
+            kernel_size=(5, 5), filters=num_filters, strides=strides, padding=padding
+        )
     )
     if strides == 1:
         node.add_op(
             Conv2D(
-                filters=8,
+                filters=num_filters,
                 kernel_size=(3, 3),
                 strides=strides,
                 padding=padding,
@@ -81,7 +85,7 @@ def generate_conv_node(strides, mime=False, first=False):
         )
         node.add_op(
             Conv2D(
-                filters=8,
+                filters=num_filters,
                 kernel_size=(5, 5),
                 strides=strides,
                 padding=padding,
@@ -91,11 +95,13 @@ def generate_conv_node(strides, mime=False, first=False):
     return node
 
 
-def generate_block(ss, anchor_points, strides=1, mime=False, first=False):
+def generate_block(ss, anchor_points, strides=1, mime=False, first=False, num_filters=8):
 
     # generate block
-    n1 = generate_conv_node(strides=strides, mime=mime, first=first)
-    n2 = generate_conv_node(strides=strides, mime=mime)
+    n1 = generate_conv_node(
+        strides=strides, mime=mime, first=first, num_filters=num_filters
+    )
+    n2 = generate_conv_node(strides=strides, mime=mime, num_filters=num_filters)
     add = ConstantNode(op=AddByPadding(ss, [n1, n2], activation=None))
 
     if first:
@@ -137,11 +143,13 @@ def generate_block(ss, anchor_points, strides=1, mime=False, first=False):
     return add
 
 
-def generate_cell(ss, hidden_states, num_blocks=5, strides=1, mime=False):
+def generate_cell(ss, hidden_states, num_blocks=5, strides=1, mime=False, num_filters=8):
     anchor_points = [h for h in hidden_states]
     boutputs = []
     for i in range(num_blocks):
-        bout = generate_block(ss, anchor_points, strides=1, mime=mime, first=i == 0)
+        bout = generate_block(
+            ss, anchor_points, strides=1, mime=mime, first=i == 0, num_filters=num_filters
+        )
         anchor_points.append(bout)
         boutputs.append(bout)
 
@@ -152,6 +160,7 @@ def generate_cell(ss, hidden_states, num_blocks=5, strides=1, mime=False):
 def create_search_space(
     input_shape=(32, 32, 3),
     output_shape=(10,),
+    num_filters=8,
     num_blocks=4,
     normal_cells=2,
     reduction_cells=1,
@@ -170,7 +179,12 @@ def create_search_space(
         for nci in range(normal_cells):
             # generate a normal cell
             cout = generate_cell(
-                ss, hidden_states, num_blocks, strides=1, mime=ri + nci > 0
+                ss,
+                hidden_states,
+                num_blocks,
+                strides=1,
+                mime=ri + nci > 0,
+                num_filters=num_filters,
             )
             hidden_states.append(cout)
 
@@ -178,7 +192,12 @@ def create_search_space(
             for rci in range(reduction_cells):
                 # generate a reduction cell
                 cout = generate_cell(
-                    ss, hidden_states, num_blocks, strides=2, mime=ri + rci > 0
+                    ss,
+                    hidden_states,
+                    num_blocks,
+                    strides=2,
+                    mime=ri + rci > 0,
+                    num_filters=num_filters,
                 )
                 hidden_states.append(cout)
 
@@ -207,9 +226,42 @@ def test_create_search_space():
     import numpy as np
 
     search_space = create_search_space()
-    ops = [random() for _ in range(search_space.num_nodes)]
-    ops = [0 for _ in range(search_space.num_nodes)]
-
+    # ops = [random() for _ in range(search_space.num_nodes)]
+    # ops = [0 for _ in range(search_space.num_nodes)]
+    ops = [
+        2,
+        6,
+        0,
+        1,
+        1,
+        2,
+        2,
+        3,
+        0,
+        2,
+        2,
+        1,
+        0,
+        4,
+        1,
+        7,
+        8,
+        0,
+        5,
+        0,
+        2,
+        2,
+        6,
+        3,
+        1,
+        1,
+        1,
+        5,
+        2,
+        0,
+        0,
+        7,
+    ]
     print(ops)
     print("Search space size: ", search_space.size)
 
