@@ -9,14 +9,14 @@ import shutil
 import tensorflow as tf
 import pathlib
 
-from nas_big_data.covertype.problem_ae import Problem
+from nas_big_data.dionis.problem_ae import Problem
 from deephyper.search.nas.model.run.horovod import run
-from nas_big_data.covertype.load_data import load_data
-from nas_big_data.covertype.dense_skipco import create_search_space
+from nas_big_data.dionis.load_data import load_data
+from nas_big_data.dionis.dense_skipco import create_search_space
 
 Problem.load_data(load_data, use_test=True)
 
-Problem.search_space(create_search_space, num_layers=10, dropout=0.0)
+Problem.search_space(create_search_space, num_layers=10)
 
 config = Problem.space
 
