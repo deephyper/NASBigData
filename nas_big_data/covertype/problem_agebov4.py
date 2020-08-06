@@ -1,8 +1,6 @@
-import traceback
-
-from deephyper.benchmark.nas.covertype.load_data import load_data
 from deephyper.problem import NaProblem
 from nas_big_data.covertype.dense_skipco import create_search_space
+from nas_big_data.covertype.load_data import load_data
 
 
 Problem = NaProblem(seed=2019)

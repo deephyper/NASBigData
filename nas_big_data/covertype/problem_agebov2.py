@@ -1,18 +1,15 @@
-import traceback
-
-from deephyper.benchmark.nas.covertype.load_data import load_data
 from deephyper.problem import NaProblem
-from deephyper.search.nas.model.baseline.dense_skipco import create_search_space
+from nas_big_data.covertype.dense_skipco import create_search_space
+from nas_big_data.covertype.load_data import load_data
 
 
 Problem = NaProblem(seed=2019)
 
 Problem.load_data(load_data)
 
-Problem.search_space(create_search_space, num_layers=10, regression=False, bn=False)
+Problem.search_space(create_search_space, num_layers=10)
 
 Problem.hyperparameters(
-    # batch_size=256,  # (128, 2048),
     batch_size=[32, 64, 128, 256, 512, 1024],
     learning_rate=(0.001, 0.1, "log-uniform"),
     optimizer="adam",
