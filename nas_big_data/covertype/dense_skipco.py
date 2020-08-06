@@ -2,7 +2,7 @@ import collections
 
 import tensorflow as tf
 
-from deephyper.search.nas.model.space import AutoKSessSpace
+from deephyper.search.nas.model.space import AutoKSearchSpace
 from deephyper.search.nas.model.space.node import ConstantNode, VariableNode, MimeNode
 from deephyper.search.nas.model.space.op.basic import Tensor, Zero
 from deephyper.search.nas.model.space.op.connect import Connect
@@ -28,7 +28,7 @@ def create_search_space(
 ):
 
     regression = False
-    ss = AutoKSessSpace(input_shape, output_shape, regression=regression)
+    ss = AutoKSearchSpace(input_shape, output_shape, regression=regression)
     source = prev_input = ss.input_nodes[0]
 
     # look over skip connections within a range of the 3 previous nodes
