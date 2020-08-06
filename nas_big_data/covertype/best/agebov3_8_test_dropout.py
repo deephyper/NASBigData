@@ -4,6 +4,10 @@ KMP_BLOCK_TIME=0
 
 horovodrun -np 4 python -m deephyper.benchmark.nas.covertype.train
 """
+import os
+import shutil
+import tensorflow as tf
+import pathlib
 
 from nas_big_data.covertype.problem_ae import Problem
 from deephyper.search.nas.model.run.horovod import run
@@ -12,7 +16,7 @@ from nas_big_data.covertype.dense_skipco import create_search_space
 
 Problem.load_data(load_data, use_test=True)
 
-Problem.search_space(create_search_space, num_layers=10, dropout=0.2)
+Problem.search_space(create_search_space, num_layers=10, dropout=0.0)
 
 config = Problem.space
 
@@ -63,4 +67,15 @@ config["arch_seq"] = [
     1,
 ]
 
-run(config)
+REP = 5
+seeds = [59950, 65837,  2339, 40409, 46235]
+
+dir_name = os.path.basename(__file__)[:-3]
+print(f"DIRNAME = {dir_name}")
+
+pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
+
+for rep in range(REP)
+    config["seed"] = seeds[rep]
+    run(config)
+    shutil.move('training.csv', os.path.join(dir_name, f'training_{rep}.csv'))
