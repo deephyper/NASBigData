@@ -12,7 +12,7 @@ from random import random
 config = Problem.space
 
 config["hyperparameters"]["num_epochs"] = 100
-config["hyperparameters"]["learning_rate"] = 0.01
+config["hyperparameters"]["learning_rate"] = 20.0
 config["hyperparameters"]["batch_size"] = 64
 config["hyperparameters"]["callbacks"].pop("TimeStopping")
 config["hyperparameters"]["verbose"] = 1

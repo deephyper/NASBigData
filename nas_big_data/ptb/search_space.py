@@ -12,7 +12,7 @@ from deephyper.search.nas.model.space.op.basic import Zero
 from deephyper.search.nas.model.space.op.connect import Connect
 from deephyper.search.nas.model.space.op.merge import AddByProjecting
 from deephyper.search.nas.model.space.op.op1d import Identity, Dense
-from deephyper.search.nas.model.space.op.seq import LSTM, Embedding
+from deephyper.search.nas.model.space.op.seq import LSTM, Embedding, TimestepDropout
 
 
 def add_lstm_seq_(node):
@@ -23,7 +23,7 @@ def add_lstm_seq_(node):
 
 def add_embedding_(node, vocab_size=10000, num_steps=20):
     # node.add_op(Identity())
-    for emb_size in range(50, 250, 10):
+    for emb_size in [50, 80, 100, 500, 800]:
         node.add_op(Embedding(vocab_size, emb_size, input_length=num_steps))
 
 
@@ -34,12 +34,15 @@ def create_search_space(
     ss = KSearchSpace(input_shape, (*output_shape, vocab_size))
     source = ss.input_nodes[0]
 
-    emb = prev_input = VariableNode()
+    emb = VariableNode()
     add_embedding_(emb, vocab_size)
     ss.connect(source, emb)
 
+    timestep_dropout = prev_input = ConstantNode(op=TimestepDropout(rate=0.1))
+    ss.connect(emb, timestep_dropout)
+
     # look over skip connections within a range of the 2 previous nodes
-    anchor_points = collections.deque([emb], maxlen=3)
+    anchor_points = collections.deque([timestep_dropout], maxlen=3)
 
     for _ in range(num_layers):
         vnode = VariableNode()
