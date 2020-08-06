@@ -2,12 +2,12 @@ import collections
 
 import tensorflow as tf
 
-from deephyper.sess.nas.model.space import AutoKSessSpace
-from deephyper.sess.nas.model.space.node import ConstantNode, VariableNode, MimeNode
-from deephyper.sess.nas.model.space.op.basic import Tensor, Zero
-from deephyper.sess.nas.model.space.op.connect import Connect
-from deephyper.sess.nas.model.space.op.merge import AddByProjecting
-from deephyper.sess.nas.model.space.op.op1d import Dense, Identity, Dropout
+from deephyper.search.nas.model.space import AutoKSessSpace
+from deephyper.search.nas.model.space.node import ConstantNode, VariableNode, MimeNode
+from deephyper.search.nas.model.space.op.basic import Tensor, Zero
+from deephyper.search.nas.model.space.op.connect import Connect
+from deephyper.search.nas.model.space.op.merge import AddByProjecting
+from deephyper.search.nas.model.space.op.op1d import Dense, Identity, Dropout
 
 
 def swish(x):
@@ -23,7 +23,7 @@ def add_dense_to_(node):
             node.add_op(Dense(units=units, activation=activation))
 
 
-def create_sess_space(
+def create_search_space(
     input_shape=(10,), output_shape=(7,), num_layers=10, dropout=0.0, *args, **kwargs
 ):
 
