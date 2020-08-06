@@ -68,14 +68,15 @@ config["arch_seq"] = [
 ]
 
 REP = 5
-seeds = [59950, 65837,  2339, 40409, 46235]
+seeds = [59950, 65837, 2339, 40409, 46235]
 
 dir_name = os.path.basename(__file__)[:-3]
 print(f"DIRNAME = {dir_name}")
 
 pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
 
-for rep in range(REP)
+for rep in range(REP):
     config["seed"] = seeds[rep]
     run(config)
-    shutil.move('training.csv', os.path.join(dir_name, f'training_{rep}.csv'))
+    shutil.move("training.csv", os.path.join(dir_name, f"training_{rep}.csv"))
+
