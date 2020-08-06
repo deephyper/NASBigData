@@ -87,7 +87,26 @@ def test_baseline():
     baseline_classifier.evaluate(balanced_acc)
 
 
+def test_categorical_identification():
+    (X, y), _ = load_data(use_test=False)
+
+    threshold = 10
+
+    r, c = np.shape(X)
+    print(f"rows: {r}, columns: {c}")
+
+    uniques = np.array([len(np.unique(X[:, ci])) for ci in range(c)])
+    # _, uniques = np.unique(X, axis=0, return_counts=True)
+    print("Number of uniques values: ", uniques.tolist())
+    is_categorical = uniques <= threshold
+    print("Is categorical: ", is_categorical.tolist())
+    print("Number of categorical: ", sum(is_categorical))
+
+    # categorical_variables = list(np.array(col2)[np.array(numclasses2)<threshold]
+
+
 if __name__ == "__main__":
-    load_data(use_test=True)
-    load_data(use_test=False)
+    # load_data(use_test=True)
+    # load_data(use_test=False)
     # test_baseline()
+    test_categorical_identification()
