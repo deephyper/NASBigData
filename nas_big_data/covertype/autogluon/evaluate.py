@@ -1,6 +1,7 @@
 import os
 import pathlib
 import argparse
+import json
 
 from autogluon import TabularPrediction as task
 from nas_big_data.covertype.load_data import load_data
@@ -40,3 +41,7 @@ perf = predictor.evaluate_predictions(
     y_true=y_test, y_pred=y_pred, auxiliary_metrics=True
 )
 print(perf)
+
+test_scores_path = os.path.join(here, "test_scores.json")
+with open(test_scores_path, "w") as fp:
+    json.dump(results, fp)
