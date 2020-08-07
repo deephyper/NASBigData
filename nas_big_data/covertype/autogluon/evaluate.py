@@ -17,6 +17,11 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+if args.walltime <= 120:
+    excluded_model_types = ["KNN"]
+else:
+    excluded_model_types = []
+
 # Create output directory
 pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
@@ -34,6 +39,7 @@ predictor = task.fit(
     time_limits=args.walltime,
     hyperparameter_tune=True,
     auto_stack=True,
+    excluded_model_types=excluded_model_types,
 )
 
 df_test = convert_to_dataframe(X_test, y_test)
