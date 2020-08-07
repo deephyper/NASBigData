@@ -20,31 +20,31 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-if args.walltime <= 120:
-    excluded_model_types = ["KNN"]
+if not args.evaluate:
+    if args.walltime <= 120:
+        excluded_model_types = ["KNN"]
+    else:
+        excluded_model_types = []
+
+    # Create output directory
+    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    (X_train, y_train), (X_valid, y_valid) = load_data(use_test=False)
+
+    df_train = convert_to_dataframe(X_train, y_train)
+    df_valid = convert_to_dataframe(X_valid, y_valid)
+
+    predictor = task.fit(
+        train_data=task.Dataset(df=df_train),
+        tuning_data=task.Dataset(df=df_valid),
+        label="label",
+        output_directory=output_dir,
+        time_limits=args.walltime,
+        hyperparameter_tune=True,
+        auto_stack=True,
+        excluded_model_types=excluded_model_types,
+    )
 else:
-    excluded_model_types = []
-
-# Create output directory
-pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
-
-(X_train, y_train), (X_valid, y_valid) = load_data(use_test=False)
-
-df_train = convert_to_dataframe(X_train, y_train)
-df_valid = convert_to_dataframe(X_valid, y_valid)
-
-predictor = task.fit(
-    train_data=task.Dataset(df=df_train),
-    tuning_data=task.Dataset(df=df_valid),
-    label="label",
-    output_directory=output_dir,
-    time_limits=args.walltime,
-    hyperparameter_tune=True,
-    auto_stack=True,
-    excluded_model_types=excluded_model_types,
-)
-
-if args.evaluate:
     _, (X_test, y_test) = load_data(use_test=True)
     df_test = convert_to_dataframe(X_test, y_test)
     predictor = task.load(output_dir)
