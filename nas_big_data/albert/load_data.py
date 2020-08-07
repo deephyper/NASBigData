@@ -18,14 +18,14 @@ def load_data_cache(use_test=False):
     if use_test:
         print("!!! USING TEST DATA !!!")
         (X_train, y_train), (X_valid, y_valid), (X_test, y_test) = albert.load_data(
-            random_state=random_state
+            random_state=random_state, test_size=0.33, valid_size=0.33 * (1 - 0.33)
         )
         X_train = np.concatenate([X_train, X_valid])
         y_train = np.concatenate([y_train, y_valid])
         X_valid, y_valid = X_test, y_test
     else:
         (X_train, y_train), (X_valid, y_valid), _ = albert.load_data(
-            random_state=random_state
+            random_state=random_state, test_size=0.33, valid_size=0.33 * (1 - 0.33)
         )
 
     # Replace missing values: https://scikit-learn.org/stable/modules/impute.html

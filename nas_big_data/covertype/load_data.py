@@ -17,14 +17,14 @@ def load_data_cache(use_test=False):
     if use_test:
         print("!!! USING TEST DATA !!!")
         (X_train, y_train), (X_valid, y_valid), (X_test, y_test) = covertype.load_data(
-            random_state=random_state, test_size=0.1, valid_size=0.1
+            random_state=random_state, test_size=0.33, valid_size=0.33 * (1 - 0.33)
         )
         X_train = np.concatenate([X_train, X_valid])
         y_train = np.concatenate([y_train, y_valid])
         X_valid, y_valid = X_test, y_test
     else:
         (X_train, y_train), (X_valid, y_valid), _ = covertype.load_data(
-            random_state=random_state, test_size=0.33, valid_size=0.33
+            random_state=random_state, test_size=0.33, valid_size=0.33 * (1 - 0.33)
         )
 
     prepro_output = preprocessing.OneHotEncoder()
@@ -106,7 +106,7 @@ def test_categorical_identification():
 
 
 if __name__ == "__main__":
-    # load_data(use_test=True)
-    # load_data(use_test=False)
+    load_data(use_test=True)
+    load_data(use_test=False)
     # test_baseline()
-    test_categorical_identification()
+    # test_categorical_identification()
