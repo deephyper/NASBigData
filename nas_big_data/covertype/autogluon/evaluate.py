@@ -48,10 +48,10 @@ y_pred = predictor.predict(task.Dataset(df=df_test))
 
 y_test = df_test.label
 
-perf = predictor.evaluate_predictions(
+results = predictor.evaluate_predictions(
     y_true=y_test, y_pred=y_pred, auxiliary_metrics=True
 )
-print(perf)
+print(results)
 
 test_scores_path = os.path.join(here, "test_scores.json")
 with open(test_scores_path, "w") as fp:
