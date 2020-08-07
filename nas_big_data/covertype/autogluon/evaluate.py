@@ -46,12 +46,19 @@ if not args.evaluate:
     )
 else:
     _, (X_test, y_test) = load_data(use_test=True)
+
+    print("Convert arrays to DataFrame...")
     df_test = convert_to_dataframe(X_test, y_test)
-    predictor = task.load(output_dir)
+
+    print("Loading models...")
+    predictor = task.load(output_dir, verbosity=4)
+
+    print("Predicting...")
     y_pred = predictor.predict(task.Dataset(df=df_test))
 
     y_test = df_test.label
 
+    print("Evaluation predictions...")
     results = predictor.evaluate_predictions(
         y_true=y_test, y_pred=y_pred, auxiliary_metrics=True
     )
