@@ -12,9 +12,8 @@ def convert_to_dataframe(X, y):
     import pandas as pd
 
     data = np.concatenate([X, np.argmax(y, axis=1).reshape(-1, 1)], axis=1)
-    df_train = pd.DataFrame(
-        data=data_train,
-        columns=[f"x{i}" for i in range(np.shape(data_train)[-1] - 1)] + ["label"],
+    df = pd.DataFrame(
+        data=data, columns=[f"x{i}" for i in range(np.shape(data)[-1] - 1)] + ["label"]
     )
 
-    return df_train
+    return df
