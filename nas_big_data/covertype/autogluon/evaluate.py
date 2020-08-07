@@ -33,7 +33,7 @@ df_valid = convert_to_dataframe(X_valid, y_valid)
 
 predictor = task.fit(
     train_data=task.Dataset(df=df_train),
-    tune_data=task.Dataset(df=df_valid),
+    tuning_data=task.Dataset(df=df_valid),
     label="label",
     output_directory=output_dir,
     time_limits=args.walltime,
