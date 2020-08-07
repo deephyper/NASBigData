@@ -2,7 +2,7 @@
 KMP_BLOCK_TIME=0
 
 
-horovodrun -np 4 python -m deephyper.benchmark.nas.covertype.train
+horovodrun -np 4 python -m deephyper.benchmark.nas.dionis.train
 """
 import os
 import shutil
