@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument(
     "--walltime", type=int, default=30 * 60, help="Walltime to fit AutoGluon"
 )
+parser.add_argument("--evaluate", const=True, default=False, help="Evaluate model.")
 
 args = parser.parse_args()
 
@@ -26,7 +27,6 @@ else:
 pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
 (X_train, y_train), (X_valid, y_valid) = load_data(use_test=False)
-_, (X_test, y_test) = load_data(use_test=True)
 
 df_train = convert_to_dataframe(X_train, y_train)
 df_valid = convert_to_dataframe(X_valid, y_valid)
@@ -42,17 +42,19 @@ predictor = task.fit(
     excluded_model_types=excluded_model_types,
 )
 
-df_test = convert_to_dataframe(X_test, y_test)
+if args.evaluate:
+    _, (X_test, y_test) = load_data(use_test=True)
+    df_test = convert_to_dataframe(X_test, y_test)
+    predictor = task.load(output_dir)
+    y_pred = predictor.predict(task.Dataset(df=df_test))
 
-y_pred = predictor.predict(task.Dataset(df=df_test))
+    y_test = df_test.label
 
-y_test = df_test.label
+    results = predictor.evaluate_predictions(
+        y_true=y_test, y_pred=y_pred, auxiliary_metrics=True
+    )
+    print(results)
 
-results = predictor.evaluate_predictions(
-    y_true=y_test, y_pred=y_pred, auxiliary_metrics=True
-)
-print(results)
-
-test_scores_path = os.path.join(here, "test_scores.json")
-with open(test_scores_path, "w") as fp:
-    json.dump(results, fp)
+    test_scores_path = os.path.join(here, "test_scores.json")
+    with open(test_scores_path, "w") as fp:
+        json.dump(results, fp)
