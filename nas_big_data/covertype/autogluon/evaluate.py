@@ -14,7 +14,9 @@ parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument(
     "--walltime", type=int, default=30 * 60, help="Walltime to fit AutoGluon"
 )
-parser.add_argument("--evaluate", const=True, default=False, help="Evaluate model.")
+parser.add_argument(
+    "--evaluate", const=True, nargs="?", default=False, help="Evaluate model."
+)
 
 args = parser.parse_args()
 
