@@ -2,7 +2,7 @@
 KMP_BLOCK_TIME=0
 
 
-horovodrun -np 4 python -m deephyper.benchmark.nas.covertype.train
+horovodrun -np 4 python -m deephyper.benchmark.nas.albert.train
 """
 
 from nas_big_data.albert.problem_agebov3 import Problem
