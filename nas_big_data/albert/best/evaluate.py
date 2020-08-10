@@ -1,48 +1,48 @@
 import json
 import time
 
-from nas_big_data.dionis.problem_ae import Problem
-from nas_big_data.dionis.load_data import load_data
+from nas_big_data.albert.problem_ae import Problem
+from nas_big_data.albert.load_data import load_data
 
 _, (X_test, y_test) = load_data(use_test=True)
 
 arch_seq = [
-    0,
-    0,
-    27,
     1,
     0,
-    27,
-    1,
+    14,
     0,
-    1,
-    24,
-    1,
-    0,
-    0,
-    9,
-    1,
-    0,
-    0,
-    24,
-    1,
-    1,
     1,
     10,
+    0,
     1,
     0,
+    30,
     0,
-    5,
     0,
+    1,
+    26,
+    1,
     1,
     1,
     26,
     1,
     1,
-    0,
-    0,
+    1,
+    18,
     1,
     0,
+    1,
+    6,
+    0,
+    0,
+    0,
+    9,
+    1,
+    1,
+    0,
+    28,
+    1,
+    1,
     1,
 ]
 
