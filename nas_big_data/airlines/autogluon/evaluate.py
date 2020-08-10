@@ -68,6 +68,8 @@ else:
     print(results)
 
     test_scores_path = os.path.join(here, "test_scores.json")
-    test_scores_path["timing_predict"] = t2 - t1
+    data_json = {"timing_predict": t2 - t1}
+    with open("timing_predict.json", "w") as fp:
+        json.dump(data_json, fp)
     with open(test_scores_path, "w") as fp:
         json.dump(results, fp)
