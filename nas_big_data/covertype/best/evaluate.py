@@ -1,3 +1,7 @@
+import os
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 import json
 import time
 
@@ -49,7 +53,10 @@ arch_seq = [
 
 model = Problem.get_keras_model(arch_seq)
 
+model.save_weights("myweights")
+
 t1 = time.time()
+model.load_weights("myweights")
 y_pred = model.predict(X_test)
 t2 = time.time()
 
