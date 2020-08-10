@@ -22,7 +22,7 @@ config = Problem.space
 
 config["hyperparameters"]["num_epochs"] = 100
 config["hyperparameters"]["learning_rate"] = 0.001474201683159716
-config["hyperparameters"]["batch_size"] = 64  # 1 rank
+config["hyperparameters"]["batch_size"] = 64  # 2 ranks
 config["hyperparameters"]["callbacks"]["ReduceLROnPlateau"] = dict(patience=4, verbose=0)
 config["hyperparameters"]["callbacks"]["EarlyStopping"] = dict(
     monitor="val_acc", min_delta=0, mode="max", verbose=0, patience=5
