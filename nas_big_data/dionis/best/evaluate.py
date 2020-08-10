@@ -1,0 +1,63 @@
+"""
+KMP_BLOCK_TIME=0
+
+
+horovodrun -np 4 python -m deephyper.benchmark.nas.dionis.train
+"""
+import json
+
+from nas_big_data.dionis.problem_ae import Problem
+from nas_big_data.dionis.load_data import load_data
+
+_, (X_test, y_test) = load_data(use_test=True)
+
+arch_seq = [
+    0,
+    0,
+    27,
+    1,
+    0,
+    27,
+    1,
+    0,
+    1,
+    24,
+    1,
+    0,
+    0,
+    9,
+    1,
+    0,
+    0,
+    24,
+    1,
+    1,
+    1,
+    10,
+    1,
+    0,
+    0,
+    5,
+    0,
+    1,
+    1,
+    26,
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    1,
+]
+
+
+model = Problem.get_keras_model(arch_seq)
+
+t1 = time.time()
+y_pred = model.predict(X_test)
+t2 = time.time()
+
+data_json = {"timing_predict": t2 - t1}
+with open("timing_predict.json", "w") as fp:
+    json.dump(results, fp)
