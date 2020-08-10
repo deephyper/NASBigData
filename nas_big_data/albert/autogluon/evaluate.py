@@ -2,6 +2,7 @@ import os
 import pathlib
 import argparse
 import json
+import time
 
 from autogluon import TabularPrediction as task
 from nas_big_data.albert.load_data import load_data
@@ -54,7 +55,9 @@ else:
     predictor = task.load(output_dir, verbosity=4)
 
     print("Predicting...")
+    t1 = time.time()
     y_pred = predictor.predict(task.Dataset(df=df_test))
+    t2 = time.time()
 
     y_test = df_test.label
 
@@ -65,5 +68,6 @@ else:
     print(results)
 
     test_scores_path = os.path.join(here, "test_scores.json")
+    test_scores_path["timing_predict"] = t2 - t1
     with open(test_scores_path, "w") as fp:
         json.dump(results, fp)
