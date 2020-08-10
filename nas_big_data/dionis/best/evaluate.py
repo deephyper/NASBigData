@@ -61,4 +61,4 @@ t2 = time.time()
 
 data_json = {"timing_predict": t2 - t1}
 with open("timing_predict.json", "w") as fp:
-    json.dump(results, fp)
+    json.dump(data_json, fp)
