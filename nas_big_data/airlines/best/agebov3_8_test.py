@@ -21,8 +21,8 @@ Problem.search_space(create_search_space, num_layers=10)
 config = Problem.space
 
 config["hyperparameters"]["num_epochs"] = 100
-config["hyperparameters"]["learning_rate"] = 0.001392459853203709
-config["hyperparameters"]["batch_size"] = 256  # 1 rank
+config["hyperparameters"]["learning_rate"] = 0.001474201683159716
+config["hyperparameters"]["batch_size"] = 64  # 1 rank
 config["hyperparameters"]["callbacks"]["ReduceLROnPlateau"] = dict(patience=4, verbose=0)
 config["hyperparameters"]["callbacks"]["EarlyStopping"] = dict(
     monitor="val_acc", min_delta=0, mode="max", verbose=0, patience=5
@@ -31,43 +31,43 @@ config["hyperparameters"]["verbose"] = 1
 
 
 config["arch_seq"] = [
-    9,
-    1,
-    30,
+    3,
+    0,
+    13,
     1,
     1,
     28,
     1,
-    1,
-    0,
-    24,
     0,
     0,
+    26,
     1,
-    23,
+    1,
     0,
-    1,
-    0,
-    27,
-    1,
-    1,
-    1,
     18,
+    1,
+    0,
+    0,
     0,
     1,
     1,
-    2,
+    1,
+    12,
+    0,
     0,
     1,
-    1,
-    14,
-    1,
-    1,
+    8,
     0,
-    20,
-    1,
     0,
     1,
+    11,
+    0,
+    0,
+    0,
+    3,
+    1,
+    0,
+    0,
 ]
 
 REP = 5
