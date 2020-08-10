@@ -5,6 +5,7 @@ KMP_BLOCK_TIME=0
 horovodrun -np 4 python -m deephyper.benchmark.nas.dionis.train
 """
 import json
+import time
 
 from nas_big_data.dionis.problem_ae import Problem
 from nas_big_data.dionis.load_data import load_data
