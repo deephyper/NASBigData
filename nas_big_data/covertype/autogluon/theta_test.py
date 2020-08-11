@@ -41,3 +41,7 @@ jobsize = os.environ.get("COBALT_JOBSIZE", 0)
 ips = list(hostnames_to_ips(hostnames))
 
 print(ips)
+
+hostname = socket.gethostname()
+IPAddr = socket.gethostbyname(hostname)
+print("My IP is: ", IPAddr)
