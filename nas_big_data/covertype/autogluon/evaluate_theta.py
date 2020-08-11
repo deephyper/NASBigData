@@ -29,11 +29,11 @@ def hostnames_to_ips(hostnames: str) -> list:
             if "-" in hn:
                 start, end = hn.split("-")
                 for hn_ in range(int(start), int(end) + 1):
-                    yield socket.gethostbyname(hn_)
+                    yield socket.gethostbyname(str(hn_))
             else:
                 yield socket.gethostbyname(hn)
 
-    return addresses_generator()
+    return addresses_generator(hostnames)
 
 
 parser = argparse.ArgumentParser(description="Process some integers.")
