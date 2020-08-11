@@ -1,0 +1,113 @@
+import os
+import pathlib
+import argparse
+import json
+import time
+import socket
+
+from autogluon import TabularPrediction as task
+from nas_big_data.covertype.load_data import load_data
+from nas_big_data.data_utils import convert_to_dataframe
+
+here = os.path.dirname(os.path.abspath(__file__))
+output_dir = os.path.join(here, "outputs")
+
+
+def hostnames_to_ips(hostnames: str) -> list:
+    """3826-3827,3830,3832-3833,3836,3838-3839
+
+    Args:
+        hostnames (str): "3826-3827,3830,3832-3833,3836,3838-3839"
+
+    Returns:
+        list: generator of ip addresses.
+    """
+    hostnames = hostnames.split(",")
+
+    def addresses_generator(hostnames: list) -> str:
+        for hn in hostnames:
+            if "-" in hn:
+                start, end = hn.split("-")
+                for hn_ in range(int(start), int(end) + 1):
+                    yield socket.gethostbyname(hn_)
+            else:
+                yield socket.gethostbyname(hn)
+
+    return addresses_generator()
+
+
+parser = argparse.ArgumentParser(description="Process some integers.")
+parser.add_argument(
+    "--walltime", type=int, default=30 * 60, help="Walltime to fit AutoGluon"
+)
+parser.add_argument(
+    "--evaluate", const=True, nargs="?", default=False, help="Evaluate model."
+)
+
+args = parser.parse_args()
+
+if not args.evaluate:
+
+    # Retriving COBALT infos
+    hostnames = os.environ.get("COBALT_PARTNAME", "")
+    jobsize = os.environ.get("COBALT_JOBSIZE", 0)
+
+    # Building list of ip addresses
+    ips = list(hostnames_to_ips(hostnames))
+
+    assert (
+        len(hostnames) == jobsize and jobsize > 0
+    ), f"Hostnames is: {hostnames}, Jobsize is: {jobsize}"
+
+    if args.walltime <= 120:
+        excluded_model_types = ["KNN"]
+    else:
+        excluded_model_types = []
+
+    # Create output directory
+    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    (X_train, y_train), (X_valid, y_valid) = load_data(use_test=False)
+
+    df_train = convert_to_dataframe(X_train, y_train)
+    df_valid = convert_to_dataframe(X_valid, y_valid)
+
+    predictor = task.fit(
+        train_data=task.Dataset(df=df_train),
+        tuning_data=task.Dataset(df=df_valid),
+        label="label",
+        output_directory=output_dir,
+        time_limits=args.walltime,
+        hyperparameter_tune=True,
+        auto_stack=True,
+        excluded_model_types=excluded_model_types,
+        dist_ip_addrs=ips,
+    )
+else:
+    _, (X_test, y_test) = load_data(use_test=True)
+
+    print("Convert arrays to DataFrame...")
+    df_test = convert_to_dataframe(X_test, y_test)
+
+    print("Loading models...")
+    predictor = task.load(output_dir, verbosity=4)
+
+    print("Predicting...")
+    t1 = time.time()
+    y_pred = predictor.predict(task.Dataset(df=df_test))
+    t2 = time.time()
+
+    y_test = df_test.label
+
+    print("Evaluation predictions...")
+    results = predictor.evaluate_predictions(
+        y_true=y_test, y_pred=y_pred, auxiliary_metrics=True
+    )
+    print(results)
+
+    test_scores_path = os.path.join(here, "test_scores.json")
+    data_json = {"timing_predict": t2 - t1}
+    with open("timing_predict.json", "w") as fp:
+        json.dump(data_json, fp)
+    with open(test_scores_path, "w") as fp:
+        json.dump(results, fp)
