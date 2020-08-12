@@ -9,6 +9,7 @@ EXP_FOLDER=covertype
 WALLTIME=120
 
 # LOAD ENVIRONMENT
+source ~/.bashrc
 cd /projects/datascience/regele/
 conda activate autogluon-env/
 
