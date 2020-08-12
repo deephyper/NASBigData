@@ -54,7 +54,7 @@ if not args.evaluate:
 
     # Retriving COBALT infos
     hostnames = os.environ.get("COBALT_PARTNAME", "")
-    jobsize = os.environ.get("COBALT_JOBSIZE", 0)
+    jobsize = int(os.environ.get("COBALT_JOBSIZE", 0))
 
     # Building list of ip addresses
     ips = list(hostnames_to_ips(hostnames))
