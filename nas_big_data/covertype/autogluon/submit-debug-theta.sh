@@ -6,7 +6,7 @@
 
 # CONFIGURABLE VARIABLES
 EXP_FOLDER=covertype
-WALLTIME=120
+WALLTIME=1200
 
 # LOAD ENVIRONMENT
 source ~/.bashrc
@@ -18,4 +18,4 @@ cd /projects/datascience/regele/NASBigData/nas_big_data/$EXP_FOLDER/autogluon/
 
 # RUN EXPERIMENT
 # python -m nas_big_data.covertype.autogluon.first_node  | xargs ssh -T; python -m nas_big_data.covertype.autogluon.theta_test
-python -m nas_big_data.covertype.autogluon.first_node  | xargs ssh -T; python -m nas_big_data.covertype.autogluon.evaluate_theta
+python -m nas_big_data.covertype.autogluon.first_node  | xargs ssh -T; python -m nas_big_data.covertype.autogluon.evaluate_theta --walltime $WALLTIME --no-knn

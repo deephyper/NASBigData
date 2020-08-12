@@ -48,6 +48,10 @@ parser.add_argument(
     "--evaluate", const=True, nargs="?", default=False, help="Evaluate model."
 )
 
+parser.add_argument(
+    "--no-knn", const=True, nargs="?", default=False, help="Deactivate KNN."
+)
+
 args = parser.parse_args()
 
 if not args.evaluate:
@@ -63,7 +67,7 @@ if not args.evaluate:
 
     ips = ips[1:]
 
-    if args.walltime <= 120:
+    if args.no_knn <= 120:
         excluded_model_types = ["KNN"]
     else:
         excluded_model_types = []
@@ -73,31 +77,38 @@ if not args.evaluate:
 
     (X_train, y_train), (X_valid, y_valid) = load_data(use_test=False)
 
-    df_train = convert_to_dataframe(X_train, y_train)
-    df_valid = convert_to_dataframe(X_valid, y_valid)
+    # df_train = convert_to_dataframe(X_train, y_train)
+    # df_valid = convert_to_dataframe(X_valid, y_valid)
+
+    X, y = (
+        np.concatenate([X_train, X_valid], axis=0),
+        np.concatenate([y_train, y_valid], axis=0),
+    )
+    df_train = convert_to_dataframe(X, y)
 
     # hyperparameters
-    nunits = list(range(16, 97, 16))
-    nn_options = {  # specifies non-default hyperparameter values for neural network models
-        "num_epochs": 100,  # number of training epochs (controls training time of NN models)
-        "learning_rate": ag.space.Real(
-            0.001, 0.1, default=0.01, log=True
-        ),  # learning rate used in training (real-valued hyperparameter searched on log-scale)
-        "activation": ag.space.Categorical(
-            None, swish, "relu", "tanh", "sigmoid"
-        ),  # activation function used in NN (categorical hyperparameter, default = first entry)
-        "layers": ag.space.Categorical(*(nunits for _ in range(10))),
-        # Each choice for categorical hyperparameter 'layers' corresponds to list of sizes for each NN layer to use
-        "dropout_prob": 0.0,
-    }
+    # nunits = list(range(16, 97, 16))
+    # nn_options = {  # specifies non-default hyperparameter values for neural network models
+    #     "num_epochs": 100,  # number of training epochs (controls training time of NN models)
+    #     "learning_rate": ag.space.Real(
+    #         0.001, 0.1, default=0.01, log=True
+    #     ),  # learning rate used in training (real-valued hyperparameter searched on log-scale)
+    #     "activation": ag.space.Categorical(
+    #         None, swish, "relu", "tanh", "sigmoid"
+    #     ),  # activation function used in NN (categorical hyperparameter, default = first entry)
+    #     "layers": ag.space.Categorical(*(nunits for _ in range(10))),
+    #     # Each choice for categorical hyperparameter 'layers' corresponds to list of sizes for each NN layer to use
+    #     "dropout_prob": 0.0,
+    # }
+    # hyperparameters = {"NN": nn_options}
 
     predictor = task.fit(
         train_data=task.Dataset(df=df_train),
-        tuning_data=task.Dataset(df=df_valid),
+        # tuning_data=task.Dataset(df=df_valid),
         label="label",
         output_directory=output_dir,
         time_limits=args.walltime,
-        hyperparameter_tune=True,
+        hyperparameter_tune=False,
         auto_stack=True,
         excluded_model_types=excluded_model_types,
         dist_ip_addrs=ips,
