@@ -59,9 +59,7 @@ if not args.evaluate:
     # Building list of ip addresses
     ips = list(hostnames_to_ips(hostnames))
 
-    assert (
-        len(hostnames) == jobsize and jobsize > 0
-    ), f"Hostnames is: {hostnames}, Jobsize is: {jobsize}"
+    assert len(ips) == jobsize and jobsize > 0, f"Ips is: {ips}, Jobsize is: {jobsize}"
 
     ips = ips[1:]
 
