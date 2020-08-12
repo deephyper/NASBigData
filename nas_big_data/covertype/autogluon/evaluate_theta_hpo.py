@@ -5,7 +5,9 @@ import pathlib
 import socket
 import time
 
+import autogluon as ag
 from autogluon import TabularPrediction as task
+
 from nas_big_data.covertype.load_data import load_data
 from nas_big_data.data_utils import convert_to_dataframe
 
