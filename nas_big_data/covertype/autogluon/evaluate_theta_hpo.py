@@ -85,9 +85,8 @@ if not args.evaluate:
     # hyperparameters
     nunits = list(range(16, 97, 16))
     nn_options = {  # specifies non-default hyperparameter values for neural network models
-        "num_epochs": ag.space.Int(
-            lower=20, upper=100, default=20
-        ),  # number of training epochs (controls training time of NN models)
+        "num_epochs": 20,  # ag.space.Int( lower=20, upper=100, default=20 ),  # number of training epochs (controls training time of NN models)
+        "batch_size": ag.space.Categorical(32, 64, 128, 256, 512, 1024),
         "learning_rate": ag.space.Real(
             0.001, 0.1, default=0.01, log=True
         ),  # learning rate used in training (real-valued hyperparameter searched on log-scale)
@@ -97,6 +96,11 @@ if not args.evaluate:
         "layers": ag.space.Categorical(*(nunits for _ in range(10))),
         # Each choice for categorical hyperparameter 'layers' corresponds to list of sizes for each NN layer to use
         "dropout_prob": 0.0,
+        "optimizer": "adam",
+        "use_ngram_features": False,
+        "lr_decay": 0.1,
+        "use_batchnorm": False,
+        "lr_scheduler": "step",
     }
     hyperparameters = {"NN": nn_options}
 
@@ -108,7 +112,8 @@ if not args.evaluate:
         time_limits=args.walltime,
         hyperparameter_tune=True,
         hyperparameters=hyperparameters,
-        auto_stack=True,
+        search_strategy="skopt",
+        auto_stack=False,
         excluded_model_types=excluded_model_types,
         dist_ip_addrs=ips,
     )
