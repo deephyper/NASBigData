@@ -2,7 +2,7 @@
 #COBALT -t 20
 #COBALT -n 3
 #COBALT -A datascience
-#COBALT -q default
+#COBALT -q debug-cache-quad
 
 # CONFIGURABLE VARIABLES
 EXP_FOLDER=covertype
