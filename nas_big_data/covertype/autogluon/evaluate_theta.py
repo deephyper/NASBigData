@@ -24,14 +24,18 @@ def hostnames_to_ips(hostnames: str) -> list:
     """
     hostnames = hostnames.split(",")
 
+    def to_nid(hn):
+        hn = int(hn) if type(hn) is str else hn
+        return f"nid{hn:05d}"
+
     def addresses_generator(hostnames: list) -> str:
         for hn in hostnames:
             if "-" in hn:
                 start, end = hn.split("-")
                 for hn_ in range(int(start), int(end) + 1):
-                    yield socket.gethostbyname(str(hn_))
+                    yield socket.gethostbyname(to_nid(hn_))
             else:
-                yield socket.gethostbyname(hn)
+                yield socket.gethostbyname(to_nid(hn))
 
     return addresses_generator(hostnames)
 
@@ -58,6 +62,8 @@ if not args.evaluate:
     assert (
         len(hostnames) == jobsize and jobsize > 0
     ), f"Hostnames is: {hostnames}, Jobsize is: {jobsize}"
+
+    ips = ips[1:]
 
     if args.walltime <= 120:
         excluded_model_types = ["KNN"]

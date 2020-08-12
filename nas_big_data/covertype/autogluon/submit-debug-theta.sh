@@ -9,12 +9,12 @@ EXP_FOLDER=covertype
 WALLTIME=120
 
 # LOAD ENVIRONMENT
-source ~/.bashrc
 cd /projects/datascience/regele/
-conda activate dh-env/
+conda activate autogluon-env/
 
 # MOVE TO EXP FOLDER
 cd /projects/datascience/regele/NASBigData/nas_big_data/$EXP_FOLDER/autogluon/
 
 # RUN EXPERIMENT
-python -m nas_big_data.$EXP_FOLDER.autogluon.evaluate_theta --walltime $WALLTIME
+# python -m nas_big_data.covertype.autogluon.first_node  | xargs ssh -T; python -m nas_big_data.covertype.autogluon.theta_test
+python -m nas_big_data.covertype.autogluon.first_node  | xargs ssh -T; python -m nas_big_data.covertype.autogluon.evaluate_theta
