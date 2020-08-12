@@ -75,14 +75,10 @@ if not args.evaluate:
     # Create output directory
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
+    (X_train, y_train), (X_valid, y_valid) = load_data(use_test=False)
+
     df_train = convert_to_dataframe(X_train, y_train)
     df_valid = convert_to_dataframe(X_valid, y_valid)
-
-    X, y = (
-        np.concatenate([X_train, X_valid], axis=0),
-        np.concatenate([y_train, y_valid], axis=0),
-    )
-    df_train = convert_to_dataframe(X, y)
 
     # hyperparameters
     nunits = list(range(16, 97, 16))
