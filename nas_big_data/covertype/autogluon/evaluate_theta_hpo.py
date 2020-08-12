@@ -88,7 +88,7 @@ if not args.evaluate:
             0.001, 0.1, default=0.01, log=True
         ),  # learning rate used in training (real-valued hyperparameter searched on log-scale)
         "activation": ag.space.Categorical(
-            None, swish, "relu", "tanh", "sigmoid"
+            None, "swish", "relu", "tanh", "sigmoid"
         ),  # activation function used in NN (categorical hyperparameter, default = first entry)
         "layers": ag.space.Categorical(*(nunits for _ in range(10))),
         # Each choice for categorical hyperparameter 'layers' corresponds to list of sizes for each NN layer to use
