@@ -45,3 +45,15 @@ conda install -c anaconda mxnet
 ```
 
 For cuda: `pip install mxnet-cu101`
+
+## Local Testing
+
+Aging Evolution to optimize both Ha and Hm:
+```bash
+python -m nas_big_data.search.ae_hpo_nas --run nas_big_data.run.quick.run --problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000
+```
+
+Bayesian Optimization to optimize both Ha and Hm:
+```bash
+python -m nas_big_data.search.bo_hpo_nas --run nas_big_data.run.quick.run --problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000
+```
