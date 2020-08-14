@@ -59,8 +59,6 @@ class BoHpoNas(NeuralArchitectureSearch):
             (0, vnode.num_ops - 1) for vnode in search_space.variable_nodes
         ]
 
-        self.n_jobs = int(n_jobs)
-
         # Initialize Hyperaparameter space
         self.dimensions = []
         self.size_ha = None  # Number of algorithm hyperparameters in the dimension list
