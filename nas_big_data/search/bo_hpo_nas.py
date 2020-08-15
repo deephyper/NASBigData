@@ -66,7 +66,8 @@ class BoHpoNas(NeuralArchitectureSearch):
         self.add_hm_dimensions()
 
         # Initialize opitmizer of hyperparameter space
-        acq_func_kwargs = {"xi": 0.000001, "kappa": 0.001}  # tiny exploration
+        # acq_func_kwargs = {"xi": 0.000001, "kappa": 0.001}  # tiny exploration
+        acq_func_kwargs = {"xi": 0.000001, "kappa": 1.96}  # tiny exploration
         self.n_initial_points = self.free_workers
 
         self.opt = SkOptimizer(
