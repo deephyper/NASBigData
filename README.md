@@ -7,11 +7,11 @@ Aging Evolution with Bayesian Optimization (AgEBO) is a nested-distributed algor
 - the jointly optimization of hyperparameters and neural architectures which enables the automatic adaptation of data-parallelism setting to avoid a loss of accuracy.
 
 This repo contains the experimental materials linked to the implementation of AgEBO algorithm in DeepHyper's repo.
-The version of DeepHyper used is: https://github.com/deephyper/deephyper/commit/ad5a0f3391b6afca4358c66123246d0086c02f0f
+The version of DeepHyper used is: [ad5a0f3391b6afca4358c66123246d0086c02f0f](https://github.com/deephyper/deephyper/commit/ad5a0f3391b6afca4358c66123246d0086c02f0f)
 
 ## Installation
 
-To install DeepHyper follow the instructions given at: https://deephyper.readthedocs.io/
+To install DeepHyper follow the instructions given at: [deephyper.readthedocs.io](https://deephyper.readthedocs.io/)
 
 After installing DeepHyper, install this repo by running the following commands in your terminal:
 
@@ -21,7 +21,7 @@ cd NASBigData/
 pip install -e.
 ```
 
-### Installation of DeepHyper of Cooley
+### Installation of DeepHyper on Cooley
 
 On Cooley at ALCF:
 
@@ -66,7 +66,7 @@ conda install -c anaconda mxnet
 
 For cuda: `pip install mxnet-cu101`
 
-## Main commands
+## Main commands to reproduce
 
 ## Balsam launcher
 
@@ -77,24 +77,18 @@ balsam init mydatabase
 source balsamactivate mydatabase
 ```
 
-### Aging Evolution for joint optimization
-
-Aging Evolution to optimize both hyperparameters and neural architectures, local testing with dummy evaluation function:
-
-```bash
-python -m nas_big_data.search.ae_hpo_nas --run nas_big_data.run.quick.run --problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000
-```
+### Aging Evolution for neural architecture search
 
 Create the `AgE` application for Balsam on Theta:
 
 ```bash
-balsam app --name AgE --exe "$(which python) -m nas_big_data.search.ae_hpo_nas --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
+balsam app --name AgE --exe "$(which python) -m deephyper.search.nas.regevo --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
 ```
 
-Then create a job for a specific experiment:
+Then create a job for a specific experiment (here models are evaluated with 8 ranks in parallel):
 
 ```bash
-balsam job --name covertype_age_129 --name covertype_age_129 --app AgE --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+balsam job --name covertype_age_129 --name covertype_age_129 --app AgE --args "--problem nas_big_data.covertype.problem_ae.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
 ```
 
 Finally, launch this experiment (for Theta):
@@ -103,17 +97,74 @@ Finally, launch this experiment (for Theta):
 balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --wf-filter covertype_age_129
 ```
 
+### Aging Evolution with Bayesian Optimization (AgEBO)
+
+Create the `AgEBO` application for Balsam on Theta:
+
+```bash
+balsam app --name AgEBO --exe "$(which python) -m deephyper.search.nas.agebov3 --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
+```
+
+Then create a job for a specific experiment (here models are evaluated with 8 ranks in parallel):
+
+```bash
+balsam job --name covertype_agebo_129 --name covertype_agebo_129 --app AgE --args "--problem nas_big_data.covertype.problem_agebov3.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+```
+
+Finally, launch this experiment (for Theta):
+
+```bash
+balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --wf-filter covertype_agebo_129
+```
+
+### Aging Evolution for joint optimization
+
+Aging Evolution to optimize both hyperparameters and neural architectures, local testing with dummy evaluation function:
+
+```bash
+python -m nas_big_data.search.ae_hpo_nas --run nas_big_data.run.quick.run --problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000
+```
+
+Create the `AgEHPNAS` application for Balsam on Theta:
+
+```bash
+balsam app --name AgEHPNAS --exe "$(which python) -m nas_big_data.search.ae_hpo_nas --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
+```
+
+Then create a job for a specific experiment:
+
+```bash
+balsam job --name covertype_agehpnas_129 --name covertype_agehpnas_129 --app AgEHPNAS --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+```
+
+Finally, launch this experiment (for Theta):
+
+```bash
+balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --wf-filter covertype_agehpnas_129
+```
+
 ### Bayesian Optimization for joint optimization
 
-Bayesian Optimization to optimize both hyperparameters and neural architectures:
+Bayesian Optimization to optimize both hyperparameters and neural architectures, local testing with dummy evaluation function:
 
 ```bash
 python -m nas_big_data.search.bo_hpo_nas --run nas_big_data.run.quick.run --problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000
 ```
 
-For Theta:
+Create the `BO` application for Balsam on Theta:
 
 ```bash
-balsam app --name BOHPNAS --exe "$(which python) -m nas_big_data.search.bo_hpo_nas --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
+balsam app --name BO --exe "$(which python) -m nas_big_data.search.bo_hpo_nas --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
 ```
 
+Then create a job for a specific experiment:
+
+```bash
+balsam job --name covertype_bo_129 --name covertype_bo_129 --app BO --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+```
+
+Finally, launch this experiment (for Theta):
+
+```bash
+balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --wf-filter covertype_bo_129
+```
