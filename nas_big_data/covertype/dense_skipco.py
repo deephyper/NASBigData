@@ -24,7 +24,7 @@ def add_dense_to_(node):
 
 
 def create_search_space(
-    input_shape=(10,), output_shape=(7,), num_layers=10, dropout=0.0, *args, **kwargs
+    input_shape=(54,), output_shape=(7,), num_layers=10, dropout=0.0, *args, **kwargs
 ):
 
     regression = False
