@@ -6,13 +6,13 @@ import collections
 
 import tensorflow as tf
 
-from deephyper.search.nas.model.space import KSearchSpace
-from deephyper.search.nas.model.space.node import ConstantNode, VariableNode
-from deephyper.search.nas.model.space.op.basic import Zero
-from deephyper.search.nas.model.space.op.connect import Connect
-from deephyper.search.nas.model.space.op.merge import AddByProjecting
-from deephyper.search.nas.model.space.op.op1d import Identity, Dense
-from deephyper.search.nas.model.space.op.seq import LSTM, Embedding, TimestepDropout
+from deephyper.nas.space import KSearchSpace
+from deephyper.nas.space.node import ConstantNode, VariableNode
+from deephyper.nas.space.op.basic import Zero
+from deephyper.nas.space.op.connect import Connect
+from deephyper.nas.space.op.merge import AddByProjecting
+from deephyper.nas.space.op.op1d import Identity, Dense
+from deephyper.nas.space.op.seq import LSTM, Embedding, TimestepDropout
 
 
 def add_lstm_seq_(node):

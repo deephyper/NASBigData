@@ -2,22 +2,18 @@ import collections
 
 import tensorflow as tf
 
-from deephyper.search.nas.model.space import AutoKSearchSpace
-from deephyper.search.nas.model.space.node import ConstantNode, VariableNode, MimeNode
-from deephyper.search.nas.model.space.op.basic import Tensor, Zero
-from deephyper.search.nas.model.space.op.connect import Connect
-from deephyper.search.nas.model.space.op.merge import AddByProjecting
-from deephyper.search.nas.model.space.op.op1d import Dense, Identity, Dropout
-
-
-def swish(x):
-    return x * tf.nn.sigmoid(x)
+from deephyper.nas.space import AutoKSearchSpace
+from deephyper.nas.space.node import ConstantNode, VariableNode, MimeNode
+from deephyper.nas.space.op.basic import Tensor, Zero
+from deephyper.nas.space.op.connect import Connect
+from deephyper.nas.space.op.merge import AddByProjecting
+from deephyper.nas.space.op.op1d import Dense, Identity, Dropout
 
 
 def add_dense_to_(node):
     node.add_op(Identity())  # we do not want to create a layer in this case
 
-    activations = [None, swish, tf.nn.relu, tf.nn.tanh, tf.nn.sigmoid]
+    activations = [None, tf.nn.swish, tf.nn.relu, tf.nn.tanh, tf.nn.sigmoid]
     for units in range(16, 97, 16):
         for activation in activations:
             node.add_op(Dense(units=units, activation=activation))

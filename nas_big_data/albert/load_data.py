@@ -7,7 +7,7 @@ from sklearn.impute import SimpleImputer
 
 from deephyper.benchmark.datasets import albert
 from deephyper.benchmark.datasets.util import cache_load_data
-from deephyper.search.nas.model.preprocessing import minmaxstdscaler
+from deephyper.nas.preprocessing import minmaxstdscaler
 
 
 @cache_load_data("/dev/shm/albert.npz")

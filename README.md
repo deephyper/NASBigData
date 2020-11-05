@@ -82,7 +82,7 @@ source balsamactivate mydatabase
 Create the `AgE` application for Balsam on Theta:
 
 ```bash
-balsam app --name AgE --exe "$(which python) -m deephyper.search.nas.regevo --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
+balsam app --name AgE --exe "$(which python) -m deephyper.search.nas.regevo --evaluator balsam --run deephyper.nas.run.horovod.run"
 ```
 
 Then create a job for a specific experiment (here models are evaluated with 8 ranks in parallel):
@@ -102,7 +102,7 @@ balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --
 Create the `AgEBO` application for Balsam on Theta:
 
 ```bash
-balsam app --name AgEBO --exe "$(which python) -m deephyper.search.nas.agebov3 --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
+balsam app --name AgEBO --exe "$(which python) -m deephyper.search.nas.agebov3 --evaluator balsam --run deephyper.nas.run.horovod.run"
 ```
 
 Then create a job for a specific experiment (here models are evaluated with 8 ranks in parallel):
@@ -128,7 +128,7 @@ python -m nas_big_data.search.ae_hpo_nas --run nas_big_data.run.quick.run --prob
 Create the `AgEHPNAS` application for Balsam on Theta:
 
 ```bash
-balsam app --name AgEHPNAS --exe "$(which python) -m nas_big_data.search.ae_hpo_nas --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
+balsam app --name AgEHPNAS --exe "$(which python) -m nas_big_data.search.ae_hpo_nas --evaluator balsam --run deephyper.nas.run.horovod.run"
 ```
 
 Then create a job for a specific experiment:
@@ -154,7 +154,7 @@ python -m nas_big_data.search.bo_hpo_nas --run nas_big_data.run.quick.run --prob
 Create the `BO` application for Balsam on Theta:
 
 ```bash
-balsam app --name BO --exe "$(which python) -m nas_big_data.search.bo_hpo_nas --evaluator balsam --run deephyper.search.nas.model.run.horovod.run"
+balsam app --name BO --exe "$(which python) -m nas_big_data.search.bo_hpo_nas --evaluator balsam --run deephyper.nas.run.horovod.run"
 ```
 
 Then create a job for a specific experiment:

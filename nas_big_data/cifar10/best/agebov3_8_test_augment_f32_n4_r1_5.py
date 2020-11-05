@@ -8,7 +8,7 @@ horovodrun -np 4 python -m deephyper.benchmark.nas.covertype.train
 from nas_big_data.cifar10.problem_agebov3 import Problem
 from nas_big_data.cifar10.load_data import load_data
 from nas_big_data.cifar10.search_space_darts import create_search_space
-from deephyper.search.nas.model.run.horovod import run
+from deephyper.nas.run.horovod import run
 
 Problem.load_data(load_data, use_test=True)
 

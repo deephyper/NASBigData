@@ -3,18 +3,13 @@ from itertools import cycle
 
 import tensorflow as tf
 
-from deephyper.search.nas.model.space import AutoKSearchSpace
-from deephyper.search.nas.model.space.node import ConstantNode, VariableNode, MimeNode
-from deephyper.search.nas.model.space.op.basic import Tensor
-from deephyper.search.nas.model.space.op.cnn import (
-    Conv2D,
-    AvgPool2D,
-    MaxPool2D,
-    SeparableConv2D,
-)
-from deephyper.search.nas.model.space.op.connect import Connect
-from deephyper.search.nas.model.space.op.merge import AddByPadding, Concatenate
-from deephyper.search.nas.model.space.op.op1d import Dense, Identity
+from deephyper.nas.space import AutoKSearchSpace
+from deephyper.nas.space.node import ConstantNode, VariableNode, MimeNode
+from deephyper.nas.space.op.basic import Tensor
+from deephyper.nas.space.op.cnn import Conv2D, AvgPool2D, MaxPool2D, SeparableConv2D
+from deephyper.nas.space.op.connect import Connect
+from deephyper.nas.space.op.merge import AddByPadding, Concatenate
+from deephyper.nas.space.op.op1d import Dense, Identity
 
 
 normal_nodes = []

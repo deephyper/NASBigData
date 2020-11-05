@@ -6,7 +6,7 @@ horovodrun -np 4 python -m deephyper.benchmark.nas.dionis.train
 """
 
 from nas_big_data.dionis.problem_agebov3 import Problem
-from deephyper.search.nas.model.run.horovod import run
+from deephyper.nas.run.horovod import run
 
 config = Problem.space
 

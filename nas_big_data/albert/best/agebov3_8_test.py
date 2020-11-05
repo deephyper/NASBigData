@@ -10,7 +10,7 @@ import tensorflow as tf
 import pathlib
 
 from nas_big_data.albert.problem_ae import Problem
-from deephyper.search.nas.model.run.horovod import run
+from deephyper.nas.run.horovod import run
 from nas_big_data.albert.load_data import load_data
 from nas_big_data.albert.dense_skipco import create_search_space
 
