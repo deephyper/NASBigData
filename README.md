@@ -88,7 +88,7 @@ balsam app --name AgE --exe "$(which python) -m deephyper.search.nas.regevo --ev
 Then create a job for a specific experiment (here models are evaluated with 8 ranks in parallel):
 
 ```bash
-balsam job --name covertype_age_129 --name covertype_age_129 --app AgE --args "--problem nas_big_data.covertype.problem_ae.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+balsam job --name covertype_age_129 --workflow covertype_age_129 --app AgE --args "--problem nas_big_data.covertype.problem_ae.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
 ```
 
 Finally, launch this experiment (for Theta):
@@ -108,7 +108,7 @@ balsam app --name AgEBO --exe "$(which python) -m deephyper.search.nas.agebov3 -
 Then create a job for a specific experiment (here models are evaluated with 8 ranks in parallel):
 
 ```bash
-balsam job --name covertype_agebo_129 --name covertype_agebo_129 --app AgE --args "--problem nas_big_data.covertype.problem_agebov3.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+balsam job --name covertype_agebo_129 --workflow covertype_agebo_129 --app AgE --args "--problem nas_big_data.covertype.problem_agebov3.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
 ```
 
 Finally, launch this experiment (for Theta):
@@ -134,7 +134,7 @@ balsam app --name AgEHPNAS --exe "$(which python) -m nas_big_data.search.ae_hpo_
 Then create a job for a specific experiment:
 
 ```bash
-balsam job --name covertype_agehpnas_129 --name covertype_agehpnas_129 --app AgEHPNAS --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+balsam job --name covertype_agehpnas_129 --workflow covertype_agehpnas_129 --app AgEHPNAS --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
 ```
 
 Finally, launch this experiment (for Theta):
@@ -160,7 +160,7 @@ balsam app --name BO --exe "$(which python) -m nas_big_data.search.bo_hpo_nas --
 Then create a job for a specific experiment:
 
 ```bash
-balsam job --name covertype_bo_129 --name covertype_bo_129 --app BO --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+balsam job --name covertype_bo_129 --workflow covertype_bo_129 --app BO --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
 ```
 
 Finally, launch this experiment (for Theta):
