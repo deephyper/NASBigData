@@ -1,15 +1,19 @@
+import os
 import gzip
 import numpy as np
 
 from sklearn.model_selection import train_test_split
 
+HERE = os.path.dirname(os.path.abspath(__file__))
+
 
 def load_data_npz_gz(test=False):
 
+
     if test:
-        fname = "testing_combo.npy.gz"
+        fname = os.path.join(HERE, "testing_combo.npy.gz")
     else:
-        fname = "training_combo.npy.gz"
+        fname = os.path.join(HERE, "training_combo.npy.gz")
 
     with gzip.GzipFile(fname, "rb") as f:
         data = np.load(f, allow_pickle=True).item()
