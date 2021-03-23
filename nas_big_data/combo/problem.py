@@ -9,14 +9,17 @@ Problem.load_data(load_data)
 Problem.search_space(create_search_space, num_layers=5)
 
 Problem.hyperparameters(
-    batch_size=256,
-    learning_rate=0.01,
+    batch_size=32,
+    learning_rate=0.001,
     optimizer="adam",
     num_epochs=100,
     verbose=0,
     callbacks=dict(
         # CSVExtendedLogger=dict(),
-        ReduceLROnPlateau=dict(patience=5, verbose=0)
+        ReduceLROnPlateau=dict(monitor="val_r2", mode="max", verbose=0, patience=5),
+        EarlyStopping=dict(
+            monitor="val_r2", min_delta=0, mode="max", verbose=0, patience=10
+        ),
         )
 )
 
