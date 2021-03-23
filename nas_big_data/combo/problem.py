@@ -12,9 +12,12 @@ Problem.hyperparameters(
     batch_size=256,
     learning_rate=0.01,
     optimizer="adam",
-    num_epochs=20,
+    num_epochs=100,
     verbose=0,
-    callbacks={} #dict(CSVExtendedLogger=dict()),
+    callbacks=dict(
+        # CSVExtendedLogger=dict(),
+        ReduceLROnPlateau=dict(patience=5, verbose=0)
+        )
 )
 
 Problem.loss("mse")
