@@ -141,3 +141,4 @@ dmypy.json
 *.npz
 data/
 *.json
+*.tar.gz
