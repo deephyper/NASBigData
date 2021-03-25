@@ -33,5 +33,3 @@ Problem.objective("val_r2")
 # Just to print your problem, to test its definition and imports in the current python environment.
 if __name__ == "__main__":
     print(Problem)
-
-    # model = Problem.get_keras_model([4 for _ in range(20)])

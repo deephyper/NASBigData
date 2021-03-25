@@ -142,3 +142,6 @@ dmypy.json
 data/
 *.json
 *.tar.gz
+plots/outputs
+tmp/
+exp/
