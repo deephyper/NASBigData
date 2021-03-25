@@ -20,7 +20,7 @@ Problem.load_data(load_data_test)
 config = Problem.space
 
 config["log_dir"] = output_dir
-config["hyperparameters"]["num_epochs"] = 1
+config["hyperparameters"]["num_epochs"] = 100
 config["hyperparameters"]["verbose"] = 1
 # config["hyperparameters"]["learning_rate"] = 0.00333302975
 # config["hyperparameters"]["batch_size"] = 256
