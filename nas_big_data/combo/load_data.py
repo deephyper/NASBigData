@@ -22,6 +22,12 @@ def load_data_npz_gz(test=False):
 
     return X, y
 
+def load_data_test():
+
+    X_train, y_train = load_data_npz_gz()
+    X_test, y_test = load_data_npz_gz(test=True)
+
+    return (X_train, y_train), (X_test, y_test)
 
 def load_data():
 
