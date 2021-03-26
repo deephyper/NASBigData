@@ -1,3 +1,4 @@
+import socket
 import ray
 
 import horovod.tensorflow.keras as hvd
@@ -10,7 +11,7 @@ ray.init(address="auto")
 # Ray executor settings
 setting = RayExecutor.create_settings(timeout_s=100)
 num_hosts = 1  # number of machine to use
-num_slots = 4  # number of workers to use on each machine
+num_slots = 6  # number of workers to use on each machine
 cpus_per_slot = 1  # number of cores to allocate to each worker
 gpus_per_slot = 1 # number of GPUs to allocate to each worker
 
@@ -43,8 +44,17 @@ def simple_fn():
 
     hvd.init()
 
-    print("hvd rank", hvd.rank())
-    return 0
+    rank = hvd.rank()
+
+
+    ## getting the hostname by socket.gethostname() method
+    hostname = socket.gethostname()
+    ## getting the IP address using socket.gethostbyname() method
+    ip_address = socket.gethostbyname(hostname)
+
+    print(f"hvd rank[{ip_address}]", rank)
+
+    return rank
 
 
 # Execute the function on all workers at once
