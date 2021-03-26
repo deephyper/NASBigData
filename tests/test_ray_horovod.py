@@ -10,7 +10,7 @@ ray.init(address="auto")
 # Ray executor settings
 setting = RayExecutor.create_settings(timeout_s=100)
 num_hosts = 1  # number of machine to use
-num_slots = 8  # number of workers to use on each machine
+num_slots = 4  # number of workers to use on each machine
 cpus_per_slot = 1  # number of cores to allocate to each worker
 gpus_per_slot = 1 # number of GPUs to allocate to each worker
 
@@ -27,7 +27,9 @@ executor = RayExecutor(
 
 # Launch the Ray actors on each machine
 # This will launch `num_slots` actors on each machine
+print("Start executor...", end="", flush=True)
 executor.start()
+print("OK", flush=True)
 
 
 #! Note that there is an implicit assumption on the cluster being
