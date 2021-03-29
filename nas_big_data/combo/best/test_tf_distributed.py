@@ -11,7 +11,7 @@ import os
 from deephyper.nas.run.tf_distributed import run
 from deephyper.nas.run.util import create_dir
 from nas_big_data.combo.load_data import load_data_test
-from nas_big_data.combo.problem_ae_1 import Problem
+from nas_big_data.combo.problem_agebo_test import Problem
 
 # ray.init(address="auto")
 # run = ray.remote(num_cpus=2, num_gpus=2)(run)
@@ -26,11 +26,15 @@ config = Problem.space
 config["log_dir"] = output_dir
 config["hyperparameters"]["num_epochs"] = 4
 config["hyperparameters"]["verbose"] = 1
-# config["hyperparameters"]["learning_rate"] = 0.00333302975
-# config["hyperparameters"]["batch_size"] = 256
+config["hyperparameters"]["learning_rate"] = 0.00044295728306955007
+config["hyperparameters"]["batch_size"] = 221
+config["hyperparameters"]["optimizer"] = "adam"
+config["hyperparameters"]["patience_ReduceLROnPlateau"] = 6
+config["hyperparameters"]["patience_EarlyStopping"] = 22
+config["loss"] = "huber_loss"
 
 
-config["arch_seq"] = [347, 1, 232, 0, 0, 277, 0, 0, 0, 89, 1, 96, 0, 1, 198, 0, 0, 1, 300, 0, 228, 1, 0, 187, 1, 0, 0, 228, 0, 192, 0, 1, 369, 1, 1, 1]
+config["arch_seq"] = [371, 0, 194, 1, 0, 221, 0, 0, 1, 308, 1, 347, 1, 1, 306, 1, 0, 1, 101, 0, 34, 1, 0, 1, 1, 0, 0, 58, 0, 187, 0, 1, 112, 1, 0, 0]
 
 # run.remote(config)
 run(config)
