@@ -1,17 +1,15 @@
 from deephyper.problem import NaProblem
 from nas_big_data.combo.search_space import create_search_space
 
-# from nas_big_data.combo.load_data import load_data
-from deephyper.benchmark.nas.linearReg.load_data import load_data
+from nas_big_data.combo.load_data import load_data
+# from deephyper.benchmark.nas.linearReg.load_data import load_data
 
 Problem = NaProblem(seed=2019)
 
 Problem.load_data(load_data)
 
-Problem.search_space(create_search_space, num_layers=3)
+Problem.search_space(create_search_space, num_layers=5)
 
-# losses = ["mae", "mse", "huber_loss", "log_cosh", "mean_absolute_percentage_error", "mean_squared_logarithmic_error"]
-# losses = ["mae", "mse", "huber_loss", "log_cosh", "mape", "msle"]
 # schedules: https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules
 
 Problem.hyperparameters(
@@ -27,7 +25,7 @@ Problem.hyperparameters(
         (3, 30), "patience_ReduceLROnPlateau"
     ),
     patience_EarlyStopping=Problem.add_hyperparameter((3, 30), "patience_EarlyStopping"),
-    num_epochs=1,
+    num_epochs=4,
     verbose=0,
     callbacks=dict(
         ReduceLROnPlateau=dict(monitor="val_r2", mode="max", verbose=0, patience=5),
