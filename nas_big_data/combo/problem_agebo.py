@@ -23,7 +23,7 @@ Problem.hyperparameters(
         (3, 30), "patience_ReduceLROnPlateau"
     ),
     patience_EarlyStopping=Problem.add_hyperparameter((3, 30), "patience_EarlyStopping"),
-    num_epochs=1,
+    num_epochs=100,
     verbose=0,
     callbacks=dict(
         ReduceLROnPlateau=dict(monitor="val_r2", mode="max", verbose=0, patience=5),
