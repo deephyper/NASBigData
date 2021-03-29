@@ -1,3 +1,5 @@
 combo:
   - combo_1gpu_180_2
   - combo_1gpu_180_8
+  - combo_4gpu_180_8
+  - combo_8gpu_180_8

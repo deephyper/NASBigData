@@ -141,6 +141,53 @@ def generate_plot_from_exp(dataset, experiment, output_path):
     plot_training_time(data, output_path)
 
 
+def plot_objective_multi(experiments, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    def only_max(values):
+        res = [values[0]]
+        for value in values[1:]:
+            res.append(max(res[-1], value))
+        return res
+
+    plt.figure()
+
+    for exp,data in experiments.items():
+        t0 = data["t0"]
+
+        x_times = [d["time"].timestamp()-t0.timestamp() for d in data["history"]]
+        y_val_r2 = [d["val_r2"][-1] for d in data["history"]]
+        y_val_r2_max = [max(d["val_r2"]) for d in data["history"]]
+
+        # plt.scatter(x_times, y_val_r2, label="last")
+
+        plt.plot(x_times, only_max(y_val_r2), label=exp)
+
+    plt.ylabel("$R^2$")
+    plt.xlabel("Time (Sec.)")
+    # plt.ylim(-1,1)
+    plt.xlim(0,3600*3)
+    plt.grid()
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(output_path)
+
+
+def generate_plot_from_dataset(dataset, experiments, output_path):
+
+    # load the data for each experiment
+    experiments = {exp:None for exp in experiments}
+    module_path = os.path.join(os.path.dirname(HERE), "nas_big_data", dataset)
+    for exp in experiments:
+        experiment_path = os.path.join(module_path, "exp", exp)
+        data = load_data_from_exp(experiment_path)
+        experiments[exp] = data
+
+    plot_objective_multi(experiments, output_path)
+
+
+
 def main():
 
     output_path = os.path.join(HERE, "outputs")
@@ -160,6 +207,9 @@ def main():
             create_dir(experiment_path)
 
             generate_plot_from_exp(dataset, experiment, output_path=experiment_path)
+
+        # comparative plots between experiments of the same dataset
+        generate_plot_from_dataset(dataset, experiments[dataset], output_path=dataset_path)
 
 if __name__ == "__main__":
     main()
