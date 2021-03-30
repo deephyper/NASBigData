@@ -1,6 +1,6 @@
 from deephyper.problem import NaProblem
 from nas_big_data.combo.load_data import load_data_cache
-from nas_big_data.combo.search_space import create_search_space
+from nas_big_data.combo.search_space_shared import create_search_space
 
 Problem = NaProblem(seed=2019)
 
