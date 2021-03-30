@@ -1,8 +1,10 @@
 import os
 import gzip
 import numpy as np
+from numpy.lib.npyio import load
 
 from sklearn.model_selection import train_test_split
+from deephyper.benchmark.datasets.util import cache_load_data
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,9 +47,9 @@ def load_data():
     indexes_train, indexes_valid = indexes[:curr], indexes[curr:]
     X_train, X_valid = [], []
     for Xi in X:
-        X_train.append(Xi[:curr])
-        X_valid.append(Xi[curr:])
-    y_train, y_valid = y[:curr], y[curr:]
+        X_train.append(Xi[indexes_train])
+        X_valid.append(Xi[indexes_valid])
+    y_train, y_valid = y[indexes_train], y[indexes_valid]
 
     print("Train")
     print("Input")
@@ -66,6 +68,10 @@ def load_data():
     print(np.shape(y_train))
 
     return (X_train, y_train), (X_valid, y_valid)
+
+@cache_load_data("/dev/shm/combo.npz")
+def load_data_cache():
+    return load_data()
 
 
 if __name__ == "__main__":
