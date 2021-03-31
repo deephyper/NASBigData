@@ -1,0 +1,242 @@
+
+Importing candle utils for keras
+Params:
+{'activation': 'relu',
+ 'base_lr': None,
+ 'batch_normalization': False,
+ 'batch_size': 32,
+ 'cell_features': ['expression'],
+ 'cp': True,
+ 'cv': 1,
+ 'cv_partition': 'overlapping',
+ 'data_type': <class 'numpy.float32'>,
+ 'dense': [1000, 1000, 1000],
+ 'dense_feature_layers': [1000, 1000, 1000],
+ 'dropout': 0,
+ 'drug_features': ['descriptors'],
+ 'epochs': 100,
+ 'exclude_cells': [],
+ 'exclude_drugs': [],
+ 'experiment_id': 'EXP000',
+ 'feature_subsample': 0,
+ 'gen': False,
+ 'learning_rate': None,
+ 'logfile': None,
+ 'loss': 'mse',
+ 'max_val_loss': 1.0,
+ 'optimizer': 'adam',
+ 'output_dir': '/lus/theta-fs0/projects/datascience/regele/thetagpu/testdh/NASBigData/nas_big_data/combo/Benchmarks/Pilot1/Combo/Output/EXP000/RUN000',
+ 'preprocess_rnaseq': 'none',
+ 'profiling': False,
+ 'reduce_lr': False,
+ 'residual': False,
+ 'response_url': None,
+ 'rng_seed': 2017,
+ 'run_id': 'RUN000',
+ 'save_path': 'save/combo',
+ 'scaling': 'std',
+ 'shuffle': False,
+ 'tb': True,
+ 'timeout': 3600,
+ 'train_bool': True,
+ 'use_combo_score': False,
+ 'use_landmark_genes': True,
+ 'use_mean_growth': False,
+ 'val_split': 0.2,
+ 'verbose': None,
+ 'warmup_lr': False}
+Params: {'cell_features': ['expression'], 'drug_features': ['descriptors'], 'dense': [1000, 1000, 1000], 'dense_feature_layers': [1000, 1000, 1000], 'activation': 'relu', 'loss': 'mse', 'optimizer': 'adam', 'scaling': 'std', 'dropout': 0, 'epochs': 100, 'batch_size': 32, 'val_split': 0.2, 'cv': 1, 'cv_partition': 'overlapping', 'max_val_loss': 1.0, 'learning_rate': None, 'base_lr': None, 'residual': False, 'reduce_lr': False, 'warmup_lr': False, 'batch_normalization': False, 'feature_subsample': 0, 'rng_seed': 2017, 'save_path': 'save/combo', 'gen': False, 'use_combo_score': False, 'verbose': None, 'timeout': 3600, 'logfile': None, 'train_bool': True, 'experiment_id': 'EXP000', 'run_id': 'RUN000', 'shuffle': False, 'profiling': False, 'use_landmark_genes': True, 'preprocess_rnaseq': 'none', 'response_url': None, 'cp': True, 'tb': True, 'use_mean_growth': False, 'exclude_cells': [], 'exclude_drugs': [], 'data_type': <class 'numpy.float32'>, 'output_dir': '/lus/theta-fs0/projects/datascience/regele/thetagpu/testdh/NASBigData/nas_big_data/combo/Benchmarks/Pilot1/Combo/Output/EXP000/RUN000'}
+Loaded 317899 unique (CL, D1, D2) response sets.
+Filtered down to 276112 rows with matching information.
+Unique cell lines: 60
+Unique drugs: 98
+Distribution of dose response:
+              GROWTH
+count  276112.000000
+mean        0.334128
+std         0.526155
+min        -1.000000
+25%         0.059500
+50%         0.420100
+75%         0.780253
+max         1.693300
+Rows in train: 220890, val: 55222
+Input features shapes:
+  cell.expression: (942,)
+  drug1.descriptors: (3839,)
+  drug2.descriptors: (3839,)
+Total input dimensions: 8620
+2021-03-31 07:35:13.861806: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcuda.so.1
+2021-03-31 07:35:14.538340: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 0 with properties:
+pciBusID: 0000:07:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:14.540568: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 1 with properties:
+pciBusID: 0000:0f:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:14.542760: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 2 with properties:
+pciBusID: 0000:47:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:14.544939: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 3 with properties:
+pciBusID: 0000:4e:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:14.547286: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 4 with properties:
+pciBusID: 0000:87:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:14.549463: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 5 with properties:
+pciBusID: 0000:90:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:14.551655: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 6 with properties:
+pciBusID: 0000:b7:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:14.553831: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 7 with properties:
+pciBusID: 0000:bd:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:14.553855: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
+2021-03-31 07:35:14.555835: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11
+2021-03-31 07:35:14.555875: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11
+2021-03-31 07:35:14.556730: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcufft.so.10
+2021-03-31 07:35:14.556921: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcurand.so.10
+2021-03-31 07:35:14.558613: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusolver.so.10
+2021-03-31 07:35:14.558956: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusparse.so.11
+2021-03-31 07:35:14.559524: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8
+2021-03-31 07:35:14.596808: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1866] Adding visible gpu devices: 0, 1, 2, 3, 4, 5, 6, 7
+2021-03-31 07:35:14.597365: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2021-03-31 07:35:14.615438: I tensorflow/core/platform/profile_utils/cpu_utils.cc:112] CPU Frequency: 2245875000 Hz
+2021-03-31 07:35:14.623521: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x556cd1576010 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2021-03-31 07:35:14.623596: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+2021-03-31 07:35:15.605402: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 0 with properties:
+pciBusID: 0000:07:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:15.607555: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 1 with properties:
+pciBusID: 0000:0f:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:15.609870: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 2 with properties:
+pciBusID: 0000:47:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:15.612785: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 3 with properties:
+pciBusID: 0000:4e:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:15.614900: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 4 with properties:
+pciBusID: 0000:87:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:15.617005: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 5 with properties:
+pciBusID: 0000:90:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:15.619292: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 6 with properties:
+pciBusID: 0000:b7:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:15.621395: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1724] Found device 7 with properties:
+pciBusID: 0000:bd:00.0 name: A100-SXM4-40GB computeCapability: 8.0
+coreClock: 1.41GHz coreCount: 108 deviceMemorySize: 39.59GiB deviceMemoryBandwidth: 1.41TiB/s
+2021-03-31 07:35:15.621435: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
+2021-03-31 07:35:15.621468: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublas.so.11
+2021-03-31 07:35:15.621482: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcublasLt.so.11
+2021-03-31 07:35:15.621495: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcufft.so.10
+2021-03-31 07:35:15.621508: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcurand.so.10
+2021-03-31 07:35:15.621521: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusolver.so.10
+2021-03-31 07:35:15.621533: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcusparse.so.11
+2021-03-31 07:35:15.621546: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudnn.so.8
+2021-03-31 07:35:15.655104: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1866] Adding visible gpu devices: 0, 1, 2, 3, 4, 5, 6, 7
+2021-03-31 07:35:15.655150: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcudart.so.11.0
+2021-03-31 07:35:17.860290: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1265] Device interconnect StreamExecutor with strength 1 edge matrix:
+2021-03-31 07:35:17.860355: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1271]      0 1 2 3 4 5 6 7
+2021-03-31 07:35:17.860364: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1284] 0:   N Y Y Y Y Y Y Y
+2021-03-31 07:35:17.860370: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1284] 1:   Y N Y Y Y Y Y Y
+2021-03-31 07:35:17.860375: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1284] 2:   Y Y N Y Y Y Y Y
+2021-03-31 07:35:17.860383: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1284] 3:   Y Y Y N Y Y Y Y
+2021-03-31 07:35:17.860390: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1284] 4:   Y Y Y Y N Y Y Y
+2021-03-31 07:35:17.860396: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1284] 5:   Y Y Y Y Y N Y Y
+2021-03-31 07:35:17.860401: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1284] 6:   Y Y Y Y Y Y N Y
+2021-03-31 07:35:17.860406: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1284] 7:   Y Y Y Y Y Y Y N
+2021-03-31 07:35:17.882151: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1410] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 37599 MB memory) -> physical GPU (device: 0, name: A100-SXM4-40GB, pci bus id: 0000:07:00.0, compute capability: 8.0)
+2021-03-31 07:35:17.887432: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1410] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:1 with 37599 MB memory) -> physical GPU (device: 1, name: A100-SXM4-40GB, pci bus id: 0000:0f:00.0, compute capability: 8.0)
+2021-03-31 07:35:17.892146: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1410] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:2 with 37599 MB memory) -> physical GPU (device: 2, name: A100-SXM4-40GB, pci bus id: 0000:47:00.0, compute capability: 8.0)
+2021-03-31 07:35:17.896970: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1410] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:3 with 37599 MB memory) -> physical GPU (device: 3, name: A100-SXM4-40GB, pci bus id: 0000:4e:00.0, compute capability: 8.0)
+2021-03-31 07:35:17.901684: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1410] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:4 with 37599 MB memory) -> physical GPU (device: 4, name: A100-SXM4-40GB, pci bus id: 0000:87:00.0, compute capability: 8.0)
+2021-03-31 07:35:17.906407: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1410] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:5 with 37599 MB memory) -> physical GPU (device: 5, name: A100-SXM4-40GB, pci bus id: 0000:90:00.0, compute capability: 8.0)
+2021-03-31 07:35:17.911105: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1410] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:6 with 37599 MB memory) -> physical GPU (device: 6, name: A100-SXM4-40GB, pci bus id: 0000:b7:00.0, compute capability: 8.0)
+2021-03-31 07:35:17.915842: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1410] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:7 with 37599 MB memory) -> physical GPU (device: 7, name: A100-SXM4-40GB, pci bus id: 0000:bd:00.0, compute capability: 8.0)
+2021-03-31 07:35:17.919127: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x556d1195f2c0 initialized for platform CUDA (this does not guarantee that XLA will be used). Devices:
+2021-03-31 07:35:17.919144: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): A100-SXM4-40GB, Compute Capability 8.0
+2021-03-31 07:35:17.919149: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (1): A100-SXM4-40GB, Compute Capability 8.0
+2021-03-31 07:35:17.919154: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (2): A100-SXM4-40GB, Compute Capability 8.0
+2021-03-31 07:35:17.919161: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (3): A100-SXM4-40GB, Compute Capability 8.0
+2021-03-31 07:35:17.919166: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (4): A100-SXM4-40GB, Compute Capability 8.0
+2021-03-31 07:35:17.919172: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (5): A100-SXM4-40GB, Compute Capability 8.0
+2021-03-31 07:35:17.919177: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (6): A100-SXM4-40GB, Compute Capability 8.0
+2021-03-31 07:35:17.919182: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (7): A100-SXM4-40GB, Compute Capability 8.0
+Model: "cell.expression"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+input_1 (InputLayer)         [(None, 942)]             0
+_________________________________________________________________
+dense (Dense)                (None, 1000)              943000
+_________________________________________________________________
+dense_1 (Dense)              (None, 1000)              1001000
+_________________________________________________________________
+dense_2 (Dense)              (None, 1000)              1001000
+=================================================================
+Total params: 2,945,000
+Trainable params: 2,945,000
+Non-trainable params: 0
+_________________________________________________________________
+Model: "drug.descriptors"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+input_2 (InputLayer)         [(None, 3839)]            0
+_________________________________________________________________
+dense_3 (Dense)              (None, 1000)              3840000
+_________________________________________________________________
+dense_4 (Dense)              (None, 1000)              1001000
+_________________________________________________________________
+dense_5 (Dense)              (None, 1000)              1001000
+=================================================================
+Total params: 5,842,000
+Trainable params: 5,842,000
+Non-trainable params: 0
+_________________________________________________________________
+Model: "model"
+__________________________________________________________________________________________________
+Layer (type)                    Output Shape         Param #     Connected to
+==================================================================================================
+input.cell.expression (InputLay [(None, 942)]        0
+__________________________________________________________________________________________________
+input.drug1.descriptors (InputL [(None, 3839)]       0
+__________________________________________________________________________________________________
+input.drug2.descriptors (InputL [(None, 3839)]       0
+__________________________________________________________________________________________________
+cell.expression (Functional)    (None, 1000)         2945000     input.cell.expression[0][0]
+__________________________________________________________________________________________________
+drug.descriptors (Functional)   (None, 1000)         5842000     input.drug1.descriptors[0][0]
+                                                                 input.drug2.descriptors[0][0]
+__________________________________________________________________________________________________
+concatenate (Concatenate)       (None, 3000)         0           cell.expression[0][0]
+                                                                 drug.descriptors[0][0]
+                                                                 drug.descriptors[1][0]
+__________________________________________________________________________________________________
+dense_6 (Dense)                 (None, 1000)         3001000     concatenate[0][0]
+__________________________________________________________________________________________________
+dense_7 (Dense)                 (None, 1000)         1001000     dense_6[0][0]
+__________________________________________________________________________________________________
+dense_8 (Dense)                 (None, 1000)         1001000     dense_7[0][0]
+__________________________________________________________________________________________________
+dense_9 (Dense)                 (None, 1)            1001        dense_8[0][0]
+==================================================================================================
+Total params: 13,791,001
+Trainable params: 13,791,001
+Non-trainable params: 0
+__________________________________________________________________________________________________
+2021-03-31 07:35:18.416197: I tensorflow/core/profiler/lib/profiler_session.cc:136] Profiler session initializing.
+2021-03-31 07:35:18.416256: I tensorflow/core/profiler/lib/profiler_session.cc:155] Profiler session started.
+2021-03-31 07:35:18.416285: I tensorflow/core/profiler/internal/gpu/cupti_tracer.cc:1365] Profiler found 8 GPUs
+2021-03-31 07:35:18.416959: I tensorflow/stream_executor/platform/default/dso_loader.cc:49] Successfully opened dynamic library libcupti.so.11.0
+2021-03-31 07:35:19.557571: I tensorflow/core/profiler/lib/profiler_session.cc:172] Profiler session tear down.
+2021-03-31 07:35:19.557742: I tensorflow/core/profiler/internal/gpu/cupti_tracer.cc:1487] CUPTI activity buffer flushed
+Between random pairs in y_val:
+  mse: 0.5504
+  mae: 0.5816
+  r2: -0.9890
+  corr: 0.0055
