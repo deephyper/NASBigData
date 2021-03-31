@@ -9,7 +9,7 @@ import os
 from deephyper.nas.run.tf_distributed import run
 from deephyper.nas.run.util import create_dir
 from nas_big_data.combo.load_data import load_data_test
-from nas_big_data.combo.problem_agebo import Problem
+from nas_big_data.combo.problem_agebo_cache import Problem
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(4)])
 
