@@ -141,7 +141,7 @@ def generate_plot_from_exp(dataset, experiment, output_path):
     plot_training_time(data, output_path)
 
 
-def plot_objective_multi(experiments, output_path):
+def plot_objective_multi(experiments, output_path, baseline_data=None):
     output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
     output_path = os.path.join(output_path, output_file_name)
 
@@ -151,7 +151,11 @@ def plot_objective_multi(experiments, output_path):
             res.append(max(res[-1], value))
         return res
 
+    xmin, xmax = 0, 3600*3
     plt.figure()
+
+    if baseline_data:
+        plt.hlines(max(baseline_data["val_r2"]), xmin, xmax, colors="black", linestyles="--", label="baseline")
 
     for exp,data in experiments.items():
         t0 = data["t0"]
@@ -160,32 +164,171 @@ def plot_objective_multi(experiments, output_path):
         y_val_r2 = [d["val_r2"][-1] for d in data["history"]]
         y_val_r2_max = [max(d["val_r2"]) for d in data["history"]]
 
-        # plt.scatter(x_times, y_val_r2, label="last")
-
         plt.plot(x_times, only_max(y_val_r2), label=exp)
 
     plt.ylabel("$R^2$")
     plt.xlabel("Time (Sec.)")
-    # plt.ylim(-1,1)
+    plt.ylim(0.85,0.95)
+    plt.xlim(xmin,xmax)
+    plt.grid()
+    plt.legend(fontsize=8)
+    plt.tight_layout()
+    plt.savefig(output_path)
+
+
+def plot_scatter_objective_multi(experiments, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    plt.figure()
+
+    for exp,data in experiments.items():
+        t0 = data["t0"]
+
+        x_times = [d["time"].timestamp()-t0.timestamp() for d in data["history"]]
+        y_val_r2 = [d["val_r2"][-1] for d in data["history"]]
+
+        plt.scatter(x_times, y_val_r2, alpha=1.0, s=2, label=" ".join(exp.split("_")[1:]))
+
+    plt.ylabel("$R^2$")
+    plt.xlabel("Time (Sec.)")
+    plt.ylim(0.5,1)
     plt.xlim(0,3600*3)
     plt.grid()
+    plt.legend(fontsize=8)
+    plt.tight_layout()
+    plt.savefig(output_path)
+
+
+def plot_best_objective(experiments, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    plt.figure()
+
+    exps = []
+    best_obj = []
+    for exp,data in experiments.items():
+
+        y_val_r2 = [d["val_r2"][-1] for d in data["history"]]
+        best_obj.append(max(y_val_r2))
+        exps.append("\n".join(exp.split("_")[1:]))
+
+    plt.bar(exps, best_obj)
+    plt.ylabel("$R^2$")
+    plt.ylim(0.9,0.95)
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(output_path)
+
+
+def plot_number_of_evaluations(experiments, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    plt.figure()
+
+    exps = []
+    number_evaluations = []
+    for exp, data in experiments.items():
+
+        number_evaluations.append(len(data["history"]))
+        exps.append("\n".join(exp.split("_")[1:]))
+
+    plt.bar(exps, number_evaluations)
+    plt.ylabel("#Evaluations")
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(output_path)
+
+
+def plot_usage_training_time(experiments, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    max_time_usage = 8 * 8 * 3600 * 3
+
+    plt.figure()
+
+    exps = []
+    training_times = []
+    for exp,data in experiments.items():
+        t0 = data["t0"]
+        ngpus = int(exp.split("gpu")[0].split("_")[-1])
+        cum_training_time = sum([d["training_time"]*ngpus for d in data["history"]])
+        exps.append("\n".join(exp.split("_")[1:]))
+        training_times.append(cum_training_time/max_time_usage*100)
+
+    plt.bar(exps, training_times)
+    plt.ylim(0,100)
+    plt.ylabel("Time (Sec.)")
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(output_path)
+
+
+def plot_best_networks(data, baseline_data, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    plt.figure()
+
+    plt.plot(list(range(len(baseline_data["val_r2"]))), baseline_data["val_r2"], "k--", label="baseline")
+
+    for exp_name, exp_data in data.items():
+
+        run_data = exp_data[0]
+        plt.plot(list(range(len(run_data["val_r2"]))), run_data["val_r2"], label=exp_name)
+
+    plt.ylabel("val_r2")
+    plt.xlabel("epochs")
+    plt.ylim(0.6,1)
     plt.legend()
+    plt.grid()
     plt.tight_layout()
     plt.savefig(output_path)
 
 
 def generate_plot_from_dataset(dataset, experiments, output_path):
 
-    # load the data for each experiment
-    experiments = {exp:None for exp in experiments}
     module_path = os.path.join(os.path.dirname(HERE), "nas_big_data", dataset)
+
+    # check baseline data:
+    baseline_data = None
+    if "baseline" in experiments:
+        baseline_file = experiments["baseline"]
+        baseline_path = os.path.join(module_path, "baseline", baseline_file)
+        baseline_data = load_json(baseline_path)
+
+    bests_data = None
+    bests_output_path = None
+    if "bests" in experiments:
+        bests_output_path = os.path.join(output_path, "bests")
+        create_dir(bests_output_path)
+
+        bests_data = {}
+        for best_name in experiments["bests"]:
+            hists_path = os.path.join(module_path, "best", best_name, "history")
+            hists = [name for name in os.listdir(hists_path) if "json" in name]
+            bests_data[best_name] = [load_json(os.path.join(hists_path, h)) for h in hists]
+
+    # load the data for each experiment
+    experiments = {exp:None for exp in experiments["experiments"]}
     for exp in experiments:
         experiment_path = os.path.join(module_path, "exp", exp)
         data = load_data_from_exp(experiment_path)
         experiments[exp] = data
 
-    plot_objective_multi(experiments, output_path)
+    plot_objective_multi(experiments, output_path, baseline_data)
+    plot_best_objective(experiments, output_path)
+    plot_number_of_evaluations(experiments, output_path)
+    plot_scatter_objective_multi(experiments, output_path)
+    plot_usage_training_time(experiments, output_path)
 
+
+    # plot best
+    if bests_data is not None:
+        plot_best_networks(bests_data, baseline_data, bests_output_path)
 
 
 def main():
@@ -201,7 +344,7 @@ def main():
         dataset_path = os.path.join(output_path, dataset)
         create_dir(dataset_path)
 
-        for experiment in experiments[dataset]:
+        for experiment in experiments[dataset]["experiments"]:
 
             experiment_path = os.path.join(dataset_path, experiment)
             create_dir(experiment_path)

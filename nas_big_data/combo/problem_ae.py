@@ -9,6 +9,8 @@ Problem.load_data(load_data)
 Problem.search_space(create_search_space, num_layers=5)
 
 Problem.hyperparameters(
+    lsr_batch_size=True,
+    lsr_learning_rate=True,
     batch_size=32,
     learning_rate=0.001,
     optimizer="adam",
