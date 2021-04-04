@@ -65,4 +65,5 @@ def test_load_data_cache():
     print("Cache call 2 loading: ", dur) # -> 2 sec
 
 if __name__ == "__main__":
-    load_data()
+    # load_data()
+    test_load_data_cache()
