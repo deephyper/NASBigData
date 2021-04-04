@@ -26,9 +26,9 @@ Problem.hyperparameters(
 
 Problem.loss("binary_crossentropy")
 
-Problem.metrics(["acc", "f1_score"])
+Problem.metrics(["acc", "auc"])
 
-Problem.objective("val_f1_score")
+Problem.objective("val_auc")
 
 
 # Just to print your problem, to test its definition and imports in the current python environment.
