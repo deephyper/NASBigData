@@ -24,7 +24,7 @@ Problem.hyperparameters(
         )
 )
 
-Problem.loss("binary_crossentropy")
+Problem.loss("categorical_crossentropy")
 
 Problem.metrics(["acc", "auc"])
 
