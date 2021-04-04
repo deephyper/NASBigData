@@ -93,7 +93,7 @@ def cache_load_data_h5(cache_loc):
                 (X_train, y_train), (X_valid, y_valid) = data_loader(*args, **kwargs)
                 if os.path.exists(os.path.dirname(cache_loc)):
                     print("Caching Data.")
-                    h5f = h5py.File("training_attn.h5", "w")
+                    h5f = h5py.File(cache_loc, "w")
                     h5f.create_dataset("X_train", data=X_train)
                     h5f.create_dataset("y_train", data=y_train)
                     h5f.create_dataset("X_valid", data=X_valid)
