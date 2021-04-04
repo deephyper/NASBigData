@@ -1,5 +1,5 @@
 from deephyper.problem import NaProblem
-from nas_big_data.combo.search_space_shared import create_search_space
+from nas_big_data.attn.search_space import create_search_space
 from nas_big_data.attn.load_data import load_data_cache
 
 Problem = NaProblem(seed=2019)
@@ -24,7 +24,7 @@ Problem.hyperparameters(
         )
 )
 
-Problem.loss("categorical_crossentropy")
+Problem.loss("binary_crossentropy")
 
 Problem.metrics(["acc", "auc"])
 

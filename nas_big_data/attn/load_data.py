@@ -22,6 +22,8 @@ def load_data_h5(split="train"):
 
     h5f.close()
 
+    y = np.argmax(y, axis=1)
+
     return X, y
 
 
