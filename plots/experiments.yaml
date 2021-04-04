@@ -1,5 +1,25 @@
 combo:
-  - combo_1gpu_180_2
-  - combo_1gpu_180_8
-  - combo_4gpu_180_8
-  - combo_8gpu_180_8
+  baseline: baseline_training.json
+  experiments_folder: exp_sc21
+  experiments:
+    # - combo_1gpu_8_age
+    # - combo_8gpu_8_age
+    # - combo_8gpu_8_agebo
+    - combo_1gpu_2_age
+    - combo_1gpu_2_agebo
+    - combo_1gpu_2_agebobs
+    - combo_1gpu_2_agebop
+    - combo_2gpu_4_age
+    - combo_2gpu_4_agebo
+    - combo_2gpu_4_agebobs
+    - combo_2gpu_4_agebop
+    - combo_4gpu_8_age
+    - combo_4gpu_8_agebo
+    - combo_4gpu_8_agebobs
+    - combo_4gpu_8_agebop
+    - combo_8gpu_16_age
+    - combo_8gpu_16_agebo
+    - combo_8gpu_16_agebobs
+    - combo_8gpu_16_agebop
+  bests:
+    - combo_4gpu_180_8_agebo_optimized
