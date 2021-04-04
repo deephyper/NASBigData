@@ -15,7 +15,7 @@ Problem.hyperparameters(
     learning_rate=0.001,
     optimizer="adam",
     num_epochs=100,
-    verbose=0,
+    verbose=1,
     callbacks=dict(
         ReduceLROnPlateau=dict(monitor="val_auc", mode="max", verbose=0, patience=5),
         EarlyStopping=dict(
