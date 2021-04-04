@@ -17,9 +17,9 @@ Problem.hyperparameters(
     num_epochs=100,
     verbose=0,
     callbacks=dict(
-        ReduceLROnPlateau=dict(monitor="val_r2", mode="max", verbose=0, patience=5),
+        ReduceLROnPlateau=dict(monitor="val_auc", mode="max", verbose=0, patience=5),
         EarlyStopping=dict(
-            monitor="val_r2", min_delta=0, mode="max", verbose=0, patience=10
+            monitor="val_auc", min_delta=0, mode="max", verbose=0, patience=10
         ),
         )
 )
