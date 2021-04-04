@@ -24,9 +24,9 @@ Problem.hyperparameters(
         )
 )
 
-Problem.loss("categorical_crossentropy")
+Problem.loss("binary_crossentropy")
 
-Problem.metrics(["f1_score"])
+Problem.metrics(["acc", "f1_score"])
 
 Problem.objective("val_f1_score")
 
