@@ -25,7 +25,7 @@ Problem.hyperparameters(
 )
 
 Problem.loss(
-    "binary_crossentropy",
+    "categorical_crossentropy",
     class_weights={0: 0.5186881480859765, 1: 13.877462488516892}
 )
 
