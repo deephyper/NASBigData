@@ -43,15 +43,13 @@ config["hyperparameters"]["batch_size"] = 118
 config["hyperparameters"]["optimizer"] = "adagrad"
 config["hyperparameters"]["patience_ReduceLROnPlateau"] = 6
 config["hyperparameters"]["patience_EarlyStopping"] = 26
-config["hyperparameters"]["callbacks"].append(
-    ModelCheckpoint=dict(
-        monitor="val_aucpr",
-        mode="max",
-        save_best_only=True,
-        verbose=0,
-        filepath=f"{fname}.h5",
-        save_weights_only=False,
-    )
+config["hyperparameters"]["callbacks"]["ModelCheckpoint"] = dict(
+    monitor="val_aucpr",
+    mode="max",
+    save_best_only=True,
+    verbose=0,
+    filepath=f"{fname}.h5",
+    save_weights_only=False,
 )
 
 
