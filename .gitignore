@@ -146,3 +146,4 @@ plots/outputs
 tmp/
 exp*/
 *.zip
+*.h5
