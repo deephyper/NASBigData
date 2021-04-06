@@ -6,22 +6,11 @@ horovodrun -np 4 python -m deephyper.benchmark.nas.covertype.train
 """
 
 import os
-import yaml
-
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
-
-def yaml_load(path):
-    with open(path, "r") as f:
-        yaml_data = yaml.load(f, Loader=Loader)
-    return yaml_data
+import tensorflow as tf
 
 
 from nas_big_data.attn.problem_agebo import Problem
-from nas_big_data.attn.load_data import load_data_test
+from nas_big_data.attn.load_data import load_data, load_data_h5
 from deephyper.nas.run.tf_distributed import run
 from deephyper.nas.run.util import create_dir
 
@@ -32,12 +21,12 @@ fname = __file__[:-3]
 output_dir = os.path.join(HERE, fname)
 create_dir(output_dir)
 
-Problem.load_data(load_data_test)
+# Problem.load_data(load_data)
 config = Problem.space
 
 config["log_dir"] = output_dir
 config["id"] = fname
-config["hyperparameters"]["num_epochs"] = 100
+config["hyperparameters"]["num_epochs"] = 1
 config["hyperparameters"]["verbose"] = 1
 config["hyperparameters"]["learning_rate"] = 0.0012755195
 config["hyperparameters"]["batch_size"] = 118
@@ -56,3 +45,9 @@ config["hyperparameters"]["callbacks"]["ModelCheckpoint"] = dict(
 config["arch_seq"] = [325, 0, 310, 1, 1, 233, 1, 1, 0, 81, 1, 35, 0, 0, 234, 1, 0, 1]
 
 run(config)
+
+X_test, y_test = load_data_h5("test")
+
+model = tf.keras.models.load_model(f"best_model_{fname}.h5")
+score = model.evaluate(X_test, y_test)
+print("score: ", score)
