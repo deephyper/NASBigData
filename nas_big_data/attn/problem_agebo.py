@@ -35,7 +35,9 @@ Problem.hyperparameters(
     ),
 )
 
-Problem.loss("binary_crossentropy")
+Problem.loss(
+    "binary_crossentropy", weights={0: 0.5186881480859765, 1: 13.877462488516892}
+)
 
 Problem.metrics(["acc", "auroc", "aucpr"])
 

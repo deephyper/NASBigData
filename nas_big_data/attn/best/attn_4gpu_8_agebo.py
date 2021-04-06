@@ -50,4 +50,6 @@ X_test, y_test = load_data_h5("test")
 
 model = tf.keras.models.load_model(f"best_model_{fname}.h5")
 score = model.evaluate(X_test, y_test)
-print("score: ", score)
+score_names = ["loss", "acc", "auroc", "aucpr"]
+print("score:")
+output = " ".join([f"{sn}:{sv:.3f}" for sn,sv in zip(score_names, score)])
