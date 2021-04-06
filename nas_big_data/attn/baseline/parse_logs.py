@@ -10,10 +10,12 @@ def main():
     metrics = [
         "loss",
         "acc",
-        "auc",
+        "auroc",
+        "aucpr",
         "val_loss",
         "val_acc",
-        "val_auc",
+        "val_auroc",
+        "val_aucpr"
     ]
     data = {m: [] for m in metrics}
     data["training_time"] = []

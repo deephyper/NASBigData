@@ -32,7 +32,7 @@ class MultiInputsDenseSkipCoFactory(SpaceFactory):
 
         output_sub_graph = self.build_sub_graph(cmerge)
 
-        output = ConstantNode(op=Dense(1, "sigmoid"))
+        output = ConstantNode(op=Dense(2, "softmax"))
         self.ss.connect(output_sub_graph, output)
 
         return self.ss
