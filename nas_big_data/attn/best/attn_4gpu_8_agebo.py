@@ -36,6 +36,7 @@ Problem.load_data(load_data_test)
 config = Problem.space
 
 config["log_dir"] = output_dir
+config["id"] = fname
 config["hyperparameters"]["num_epochs"] = 1
 config["hyperparameters"]["verbose"] = 1
 config["hyperparameters"]["learning_rate"] = 0.0012755195
