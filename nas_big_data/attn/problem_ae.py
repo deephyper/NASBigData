@@ -17,18 +17,21 @@ Problem.hyperparameters(
     num_epochs=100,
     verbose=0,
     callbacks=dict(
-        ReduceLROnPlateau=dict(monitor="val_auc", mode="max", verbose=0, patience=5),
+        ReduceLROnPlateau=dict(monitor="val_aucpr", mode="max", verbose=0, patience=5),
         EarlyStopping=dict(
-            monitor="val_auc", min_delta=0, mode="max", verbose=0, patience=10
+            monitor="val_aucpr", min_delta=0, mode="max", verbose=0, patience=10
         ),
         )
 )
 
-Problem.loss("binary_crossentropy")
+Problem.loss(
+    "binary_crossentropy",
+    class_weights={0: 0.5186881480859765, 1: 13.877462488516892}
+)
 
-Problem.metrics(["acc", "auc"])
+Problem.metrics(["acc", "auroc", "aucpr"])
 
-Problem.objective("val_auc")
+Problem.objective("val_aucpr")
 
 
 # Just to print your problem, to test its definition and imports in the current python environment.
