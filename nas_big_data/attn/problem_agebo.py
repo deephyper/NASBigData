@@ -39,7 +39,7 @@ Problem.loss("binary_crossentropy")
 
 Problem.metrics(["acc", "auroc", "aucpr"])
 
-Problem.objective("val_auc")
+Problem.objective("val_aucpr")
 
 
 # Just to print your problem, to test its definition and imports in the current python environment.
