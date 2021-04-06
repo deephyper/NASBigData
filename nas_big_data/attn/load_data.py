@@ -31,8 +31,8 @@ def load_data_test():
 
     X_train, y_train = load_data_h5("train")
     X_valid, y_valid = load_data_h5("valid")
-    X_train = np.hstack([X_train, X_valid])
-    y_train = np.hstack([y_train, y_valid])
+    X_train = np.vstack([X_train, X_valid])
+    y_train = np.vstack([y_train, y_valid])
     X_test, y_test = load_data_h5("test")
 
     return (X_train, y_train), (X_test, y_test)
