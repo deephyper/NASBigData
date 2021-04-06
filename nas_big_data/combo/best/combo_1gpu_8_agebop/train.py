@@ -7,7 +7,7 @@ from nas_big_data.combo.load_data import load_data, load_data_npz_gz
 from deephyper.nas.run.alpha import run
 from deephyper.nas.run.util import create_dir
 
-os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(4)])
+os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(1)])
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 fname = HERE.split("/")[-1]
@@ -29,13 +29,12 @@ config["hyperparameters"]["callbacks"]["ModelCheckpoint"] = dict(
 )
 
 # Search
-config["loss"] = "mae"
-config["hyperparameters"]["learning_rate"] = 0.0001182624
-config["hyperparameters"]["batch_size"] = 142
-config["hyperparameters"]["optimizer"] = "adamax"
-config["hyperparameters"]["patience_ReduceLROnPlateau"] = 7
-config["hyperparameters"]["patience_EarlyStopping"] = 24
-config["arch_seq"] = [114, 0, 141, 1, 0, 217, 198, 1, 212, 1, 0, 96, 228, 1, 122, 1, 1, 308]
+config["loss"] = "mse"
+config["hyperparameters"]["learning_rate"] = 0.0002294332
+config["hyperparameters"]["batch_size"] = 201
+config["hyperparameters"]["optimizer"] = "nadam"
+config["hyperparameters"]["patience_ReduceLROnPlateau"] = 3
+config["arch_seq"] = [167, 1, 39, 1, 1, 184, 117, 0, 42, 1, 1, 350, 287, 1, 186, 1, 0, 342]
 
 run(config)
 
