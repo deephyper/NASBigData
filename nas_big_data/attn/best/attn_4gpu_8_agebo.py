@@ -37,7 +37,7 @@ config = Problem.space
 
 config["log_dir"] = output_dir
 config["id"] = fname
-config["hyperparameters"]["num_epochs"] = 1
+config["hyperparameters"]["num_epochs"] = 100
 config["hyperparameters"]["verbose"] = 1
 config["hyperparameters"]["learning_rate"] = 0.0012755195
 config["hyperparameters"]["batch_size"] = 118
@@ -49,7 +49,6 @@ config["hyperparameters"]["callbacks"]["ModelCheckpoint"] = dict(
     mode="max",
     save_best_only=True,
     verbose=0,
-    filepath=f"{fname}.h5",
     save_weights_only=False,
 )
 
