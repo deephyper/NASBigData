@@ -1,4 +1,5 @@
 from deephyper.problem import NaProblem
+from sklearn.utils.class_weight import compute_class_weight
 from nas_big_data.attn.search_space import create_search_space
 from nas_big_data.attn.load_data import load_data_cache
 
@@ -36,7 +37,8 @@ Problem.hyperparameters(
 )
 
 Problem.loss(
-    "binary_crossentropy", weights={0: 0.5186881480859765, 1: 13.877462488516892}
+    "binary_crossentropy",
+    class_weights={0: 0.5186881480859765, 1: 13.877462488516892}
 )
 
 Problem.metrics(["acc", "auroc", "aucpr"])
