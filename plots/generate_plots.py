@@ -17,9 +17,20 @@ except ImportError:
 
 from deephyper.nas.run.util import create_dir
 
+METRIC = None
+METRIC_TO_LABEL ={
+    "val_r2": "Validation $R^2$",
+    "val_auc": "Validation AUC",
+    "val_acc": "Validation accuracy"
+}
+METRIC_LIMITS = []
+EXPNAME_TO_LABEL = {}
+TMIN, TMAX = 0, 3600 * 3
+
 width = 8
 height = width / 1.618
 fontsize = 18
+legend_font_size = 12
 matplotlib.rcParams.update(
     {
         "font.size": fontsize,
@@ -87,8 +98,8 @@ def plot_objective(data, exp_path):
     t0 = data["t0"]
 
     x_times = [d["time"].timestamp() - t0.timestamp() for d in data["history"]]
-    y_val_r2 = [d["val_r2"][-1] for d in data["history"]]
-    y_val_r2_max = [max(d["val_r2"]) for d in data["history"]]
+    y_val_r2 = [d[METRIC][-1] for d in data["history"]]
+    y_val_r2_max = [max(d[METRIC]) for d in data["history"]]
 
     # print("Max R2: ", max(y_val_r2_max))
 
@@ -103,12 +114,12 @@ def plot_objective(data, exp_path):
     plt.scatter(x_times, y_val_r2_max, label="max")
     plt.plot(x_times, only_max(y_val_r2))
 
-    plt.ylabel("$R^2$")
+    plt.ylabel(METRIC_TO_LABEL[METRIC])
     plt.xlabel("Time (Sec.)")
-    plt.ylim(-1, 1)
+    plt.ylim(*METRIC_LIMITS)
     plt.xlim(0, 3600 * 3)
     plt.grid()
-    plt.legend()
+    plt.legend(fontsize=legend_font_size)
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
@@ -213,7 +224,7 @@ def plot_objective_multi(experiments, output_path, baseline_data=None):
 
     if baseline_data:
         plt.hlines(
-            max(baseline_data["val_r2"]),
+            max(baseline_data[METRIC]),
             xmin,
             xmax,
             colors="black",
@@ -225,17 +236,25 @@ def plot_objective_multi(experiments, output_path, baseline_data=None):
         t0 = data["t0"]
 
         x_times = [d["time"].timestamp() - t0.timestamp() for d in data["history"]]
-        y_val_r2 = [d["val_r2"][-1] for d in data["history"]]
-        y_val_r2_max = [max(d["val_r2"]) for d in data["history"]]
+        y_val_r2 = [d[METRIC][-1] for d in data["history"]]
 
-        plt.plot(x_times, only_max(y_val_r2), label=exp)
+        plt.plot(x_times, only_max(y_val_r2), label=EXPNAME_TO_LABEL[exp])
 
-    plt.ylabel("$R^2$")
-    plt.xlabel("Time (Sec.)")
-    plt.ylim(0.75, 0.95)
+    plt.ylabel(METRIC_TO_LABEL[METRIC])
+    plt.xlabel("Time (Hour)")
+    plt.ylim(*METRIC_LIMITS)
     plt.xlim(xmin, xmax)
+
+    @ticker.FuncFormatter
+    def major_formatter(x, pos):
+        return f"{x/3600:.1f}"
+
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1800))
+    ax.xaxis.set_major_formatter(major_formatter)
+
     plt.grid()
-    plt.legend(fontsize=8)
+    plt.legend(fontsize=legend_font_size)
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
@@ -251,16 +270,16 @@ def plot_scatter_objective_multi(experiments, output_path):
         t0 = data["t0"]
 
         x_times = [d["time"].timestamp() - t0.timestamp() for d in data["history"]]
-        y_val_r2 = [d["val_r2"][-1] for d in data["history"]]
+        y_val_r2 = [d[METRIC][-1] for d in data["history"]]
 
         plt.scatter(x_times, y_val_r2, alpha=1.0, s=2, label=" ".join(exp.split("_")[1:]))
 
-    plt.ylabel("$R^2$")
+    plt.ylabel(METRIC_TO_LABEL[METRIC])
     plt.xlabel("Time (Sec.)")
-    plt.ylim(0.5, 1)
+    plt.ylim(*METRIC_LIMITS)
     plt.xlim(0, 3600 * 3)
     plt.grid()
-    plt.legend(fontsize=8)
+    plt.legend(fontsize=legend_font_size)
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
@@ -276,13 +295,13 @@ def plot_best_objective(experiments, output_path):
     best_obj = []
     for exp, data in experiments.items():
 
-        y_val_r2 = [d["val_r2"][-1] for d in data["history"]]
+        y_val_r2 = [d[METRIC][-1] for d in data["history"]]
         best_obj.append(max(y_val_r2))
         exps.append("\n".join(exp.split("_")[1:]))
 
     plt.bar(exps, best_obj)
-    plt.ylabel("$R^2$")
-    plt.ylim(0.75, 0.95)
+    plt.ylabel(METRIC_TO_LABEL[METRIC])
+    plt.ylim(*METRIC_LIMITS)
     plt.grid()
     plt.tight_layout()
     plt.savefig(output_path)
@@ -301,6 +320,8 @@ def plot_number_of_evaluations(experiments, output_path):
 
         number_evaluations.append(len(data["history"]))
         exps.append("\n".join(exp.split("_")[1:]))
+
+        print(exps[-1].replace("\n", " "), " -> ", number_evaluations[-1], "evaluations")
 
     plt.bar(exps, number_evaluations)
     plt.ylabel("#Evaluations")
@@ -327,9 +348,53 @@ def plot_usage_training_time(experiments, output_path):
         exps.append("\n".join(exp.split("_")[1:]))
         training_times.append(cum_training_time / max_time_usage * 100)
 
+        serie_times = [d["training_time"] for d in data["history"]]
+        mean_time = np.mean(serie_times)
+        std_time = np.std(serie_times)
+        print(exp, " -> ", f"{mean_time/60:.2f} ± {std_time/60:.2f}")
+
     plt.bar(exps, training_times)
     plt.ylim(0, 100)
     plt.ylabel("Time (Sec.)")
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+
+def plot_count_arch_better_than_baseline(experiments, output_path, baseline_data=None):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    if baseline_data is None:
+        return
+
+    plt.figure()
+
+    base_r2 = max(baseline_data[METRIC])
+
+    for exp_name, exp_data in experiments.items():
+
+        x = exp_data["results"]["elapsed_sec"]
+        y = (exp_data["results"]["objective"] > base_r2).astype(int).tolist()
+
+        x, y = zip(*sorted(zip(x,y), key=lambda t: t[0]))
+        y = np.cumsum(y)
+        plt.plot(x, y, label=EXPNAME_TO_LABEL[exp_name])
+
+    plt.ylabel(f"Arch > {base_r2:.2f}")
+    plt.xlabel("Time (Hour)")
+    plt.xlim(TMIN, TMAX)
+
+    @ticker.FuncFormatter
+    def major_formatter(x, pos):
+        return f"{x/3600:.1f}"
+
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1800))
+    ax.xaxis.set_major_formatter(major_formatter)
+
+    plt.legend(fontsize=legend_font_size)
     plt.grid()
     plt.tight_layout()
     plt.savefig(output_path)
@@ -343,8 +408,8 @@ def plot_best_networks(data, baseline_data, output_path):
     plt.figure()
 
     plt.plot(
-        list(range(len(baseline_data["val_r2"]))),
-        baseline_data["val_r2"],
+        list(range(len(baseline_data[METRIC]))),
+        baseline_data[METRIC],
         "k--",
         label="baseline",
     )
@@ -352,12 +417,12 @@ def plot_best_networks(data, baseline_data, output_path):
     for exp_name, exp_data in data.items():
 
         run_data = exp_data[0]
-        plt.plot(list(range(len(run_data["val_r2"]))), run_data["val_r2"], label=exp_name)
+        plt.plot(list(range(len(run_data[METRIC]))), run_data[METRIC], label=exp_name)
 
-    plt.ylabel("val_r2")
+    plt.ylabel(METRIC_TO_LABEL[METRIC])
     plt.xlabel("epochs")
-    plt.ylim(0.6, 1)
-    plt.legend()
+    plt.ylim(*METRIC_LIMITS)
+    plt.legend(fontsize=legend_font_size)
     plt.grid()
     plt.tight_layout()
     plt.savefig(output_path)
@@ -398,7 +463,7 @@ def plot_scaling_number_of_evaluations(experiments, output_path):
     plt.ylabel("#Evaluations")
     plt.xlabel("#GPUs per Evaluation")
     plt.grid()
-    plt.legend()
+    plt.legend(fontsize=legend_font_size)
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
@@ -434,18 +499,22 @@ def plot_scaling_best_objective(experiments, output_path):
     ax.xaxis.set_major_locator(ticker.FixedLocator(x))
     ax.xaxis.set_major_formatter(major_formatter)
 
-    plt.ylabel("$R^2$")
+    plt.ylabel(METRIC_TO_LABEL[METRIC])
     plt.xlabel("#GPUs per Evaluation")
     plt.grid()
-    plt.legend()
+    plt.legend(fontsize=legend_font_size)
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
 
 
-def plot_scaling_time_to_solution(experiments, output_path, solution_to_reach):
+def plot_scaling_time_to_solution(experiments, output_path, baseline_data=None):
     output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
     output_path = os.path.join(output_path, output_file_name)
+
+    if baseline_data is None:
+        return
+    solution_to_reach = max(baseline_data[METRIC])
 
 
     plt.figure()
@@ -491,7 +560,7 @@ def plot_scaling_time_to_solution(experiments, output_path, solution_to_reach):
     plt.xlabel("#GPUs per Evaluation")
     plt.ylim(300, 3600 * 3)
     plt.grid()
-    plt.legend()
+    plt.legend(fontsize=legend_font_size)
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
@@ -575,6 +644,7 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
 
     # load the data for each experiment
     experiments = {exp: None for exp in experiments["experiments"]}
+
     for exp in experiments:
         experiment_path = os.path.join(module_path, experiment_folder, exp)
         data = load_data_from_exp(experiment_path)
@@ -585,6 +655,7 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
     plot_number_of_evaluations(experiments, output_path)
     plot_scatter_objective_multi(experiments, output_path)
     plot_usage_training_time(experiments, output_path)
+    plot_count_arch_better_than_baseline(experiments, output_path, baseline_data)
 
     # scaling plots
     num_workers_to_keep = 16
@@ -598,12 +669,13 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
         if (num_workers == num_workers_to_keep):
             scaling_experiments[exp_name] = exp_data
 
-    scaling_output_path = os.path.join(output_path, "scaling")
-    create_dir(scaling_output_path)
-    plot_scaling_number_of_evaluations(scaling_experiments, scaling_output_path)
-    plot_scaling_best_objective(scaling_experiments, scaling_output_path)
-    plot_scaling_time_to_solution(scaling_experiments, scaling_output_path, max(baseline_data["val_r2"]))
-    plot_scaling_training_time(scaling_experiments, scaling_output_path)
+    if len(scaling_experiments) > 0:
+        scaling_output_path = os.path.join(output_path, "scaling")
+        create_dir(scaling_output_path)
+        plot_scaling_number_of_evaluations(scaling_experiments, scaling_output_path)
+        plot_scaling_best_objective(scaling_experiments, scaling_output_path)
+        plot_scaling_time_to_solution(scaling_experiments, scaling_output_path, baseline_data)
+        plot_scaling_training_time(scaling_experiments, scaling_output_path)
 
     # plot best
     if bests_data is not None:
@@ -611,6 +683,7 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
 
 
 def main():
+    global METRIC, METRIC_LIMITS
 
     output_path = os.path.join(HERE, "outputs")
     create_dir(output_path)
@@ -623,7 +696,12 @@ def main():
         dataset_path = os.path.join(output_path, dataset)
         create_dir(dataset_path)
 
+        METRIC = experiments[dataset]["metric"]
+        METRIC_LIMITS = experiments[dataset].get("metric_limits", [])
+
         for experiment in experiments[dataset]["experiments"]:
+
+            EXPNAME_TO_LABEL[experiment] = experiments[dataset]["experiments"].get(experiment, experiment)
 
             experiment_path = os.path.join(dataset_path, experiment)
             create_dir(experiment_path)

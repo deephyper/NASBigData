@@ -28,16 +28,16 @@ Problem.hyperparameters(
     num_epochs=100,
     verbose=0,
     callbacks=dict(
-        ReduceLROnPlateau=dict(monitor="val_auc", mode="max", verbose=0, patience=5),
+        ReduceLROnPlateau=dict(monitor="val_aucpr", mode="max", verbose=0, patience=5),
         EarlyStopping=dict(
-            monitor="val_auc", min_delta=0, mode="max", verbose=0, patience=10
+            monitor="val_aucpr", min_delta=0, mode="max", verbose=0, patience=10
         ),
     ),
 )
 
 Problem.loss("binary_crossentropy")
 
-Problem.metrics(["acc", "auc"])
+Problem.metrics(["acc", "auroc", "aucpr"])
 
 Problem.objective("val_auc")
 
