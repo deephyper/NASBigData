@@ -26,7 +26,7 @@ config = Problem.space
 
 config["log_dir"] = output_dir
 config["id"] = fname
-config["hyperparameters"]["num_epochs"] = 1
+config["hyperparameters"]["num_epochs"] = 100
 config["hyperparameters"]["verbose"] = 1
 config["hyperparameters"]["learning_rate"] = 0.0012755195
 config["hyperparameters"]["batch_size"] = 118
@@ -53,3 +53,4 @@ score = model.evaluate(X_test, y_test)
 score_names = ["loss", "acc", "auroc", "aucpr"]
 print("score:")
 output = " ".join([f"{sn}:{sv:.3f}" for sn,sv in zip(score_names, score)])
+print(output)
