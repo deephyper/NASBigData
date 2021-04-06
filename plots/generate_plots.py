@@ -21,7 +21,8 @@ METRIC = None
 METRIC_TO_LABEL ={
     "val_r2": "Validation $R^2$",
     "val_auc": "Validation AUC",
-    "val_acc": "Validation accuracy"
+    "val_acc": "Validation accuracy",
+    "val_aucpr": "Validation AUC Precision-Recall"
 }
 METRIC_LIMITS = []
 EXPNAME_TO_LABEL = {}
