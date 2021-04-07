@@ -15,7 +15,7 @@ from nas_big_data.attn.load_data import load_data_h5
 from deephyper.nas.run.tf_distributed import run
 from deephyper.nas.run.util import create_dir
 
-os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(4)])
+os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(1)])
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 fname = HERE.split("/")[-1]
@@ -37,13 +37,7 @@ config["hyperparameters"]["callbacks"]["ModelCheckpoint"] = dict(
 )
 
 # Search
-config["loss"] = "categorical_crossentropy"
-config["hyperparameters"]["learning_rate"] = 0.0038737749
-config["hyperparameters"]["batch_size"] = 1985
-config["hyperparameters"]["optimizer"] = "adagrad"
-config["hyperparameters"]["patience_ReduceLROnPlateau"] = 10
-config["hyperparameters"]["patience_EarlyStopping"] = 20
-config["arch_seq"] = [369, 1, 212, 0, 1, 317, 1, 0, 0, 375, 0, 94, 1, 1, 104, 1, 0, 1]
+config["arch_seq"] = [18, 1, 81, 0, 0, 119, 1, 0, 1, 364, 0, 142, 0, 0, 321, 1, 1, 0]
 
 run(config)
 
