@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, classification_report
 
-from nas_big_data.attn.problem_agebo import Problem
+from nas_big_data.attn.problem_age import Problem
 from nas_big_data.attn.load_data import load_data_h5
 from deephyper.nas.run.tf_distributed import run
 from deephyper.nas.run.util import create_dir
