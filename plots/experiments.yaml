@@ -1,25 +1,72 @@
-combo:
+# combo:
+#   baseline: baseline_training.json
+#   experiments_folder: exp_sc21
+#   metric: val_r2
+#   metric_limits: [0.8, 0.94]
+#   experiments:
+#     ### AgE: impact of data-parallism on accuracy
+#     combo_1gpu_8_age: AgE-1
+#     combo_2gpu_8_age: AgE-2
+#     combo_4gpu_8_age: AgE-4
+#     combo_8gpu_8_age: AgE-8
+#     ### AgE vs AgEBO: same amount of ressources
+#     # combo_1gpu_8_age: AgE-1
+#     # combo_2gpu_8_agebo: AgEBO-2
+#     # combo_4gpu_8_agebo: AgEBO-4
+#     # combo_8gpu_8_agebo: AgEBO-8
+#     ### AgEBO variants
+#     # combo_4gpu_8_age: AgE
+#     # combo_4gpu_8_agebobs: AgEBO-BS
+#     # combo_4gpu_8_agebop: AgEBO-P
+#     # combo_4gpu_8_agebo: AgEBO
+#     ### AgE vs AgEBO variants
+#     # combo_1gpu_8_age: AgE-1
+#     # combo_2gpu_8_age: AgE-2
+#     # combo_4gpu_8_age: AgE-4
+#     # combo_8gpu_8_age: AgE-8
+#     # # combo_1gpu_8_agebo: AgEBO-1 # MIA
+#     # combo_2gpu_8_agebo: AgEBO-2
+#     # combo_4gpu_8_agebo: AgEBO-4
+#     # combo_8gpu_8_agebo: AgEBO-8
+#     ### ...
+#     # combo_8gpu_8_age: None
+#     # combo_8gpu_8_agebo: None
+#     # combo_1gpu_2_age: None
+#     # combo_1gpu_2_agebo: None
+#     # combo_1gpu_2_agebobs: None
+#     # combo_1gpu_2_agebop: None
+#     # combo_2gpu_4_age: None
+#     # combo_2gpu_4_agebo: None
+#     # combo_2gpu_4_agebobs: None
+#     # combo_2gpu_4_agebop: None
+#     # combo_4gpu_8_age: None
+#     # combo_4gpu_8_agebo: None
+#     # combo_4gpu_8_agebobs: None
+#     # combo_4gpu_8_agebop: None
+#     # combo_8gpu_16_age: None
+#     # combo_8gpu_16_agebo: None
+#     # combo_8gpu_16_agebobs: None
+#     # combo_8gpu_16_agebop: None
+#     # combo_1gpu_8_agebop: None
+#     # combo_2gpu_8_agebop: None
+#     # combo_8gpu_8_agebop: None
+#   bests:
+#     - combo_1gpu_8_age
+#     - combo_1gpu_8_agebop
+#     - combo_4gpu_8_agebo
+#     - combo_8gpu_16_agebo
+
+attn:
   baseline: baseline_training.json
   experiments_folder: exp_sc21
+  # metric: val_aucpr
+  # metric_limits: [0.94, 1.0]
+  # metric: val_auroc
+  # metric_limits: [0.96, 1.0]
+  metric: val_acc
+  metric_limits: [0.94, 0.98]
   experiments:
-    # - combo_1gpu_8_age
-    # - combo_8gpu_8_age
-    # - combo_8gpu_8_agebo
-    - combo_1gpu_2_age
-    - combo_1gpu_2_agebo
-    - combo_1gpu_2_agebobs
-    - combo_1gpu_2_agebop
-    - combo_2gpu_4_age
-    - combo_2gpu_4_agebo
-    - combo_2gpu_4_agebobs
-    - combo_2gpu_4_agebop
-    - combo_4gpu_8_age
-    - combo_4gpu_8_agebo
-    - combo_4gpu_8_agebobs
-    - combo_4gpu_8_agebop
-    - combo_8gpu_16_age
-    - combo_8gpu_16_agebo
-    - combo_8gpu_16_agebobs
-    - combo_8gpu_16_agebop
-  bests:
-    - combo_4gpu_180_8_agebo_optimized
+    attn_1gpu_8_age: AgE-1
+    attn_4gpu_8_agebo: AgEBO-4
+    attn_8gpu_8_agebo: AgEBO-8
+  bests: []

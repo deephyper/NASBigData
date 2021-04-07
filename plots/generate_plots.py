@@ -22,7 +22,8 @@ METRIC_TO_LABEL ={
     "val_r2": "Validation $R^2$",
     "val_auc": "Validation AUC",
     "val_acc": "Validation accuracy",
-    "val_aucpr": "Validation AUC Precision-Recall"
+    "val_aucpr": "Validation AUC Precision-Recall",
+    "val_auroc": "Validation AU ROC"
 }
 METRIC_LIMITS = []
 EXPNAME_TO_LABEL = {}
@@ -430,6 +431,30 @@ def plot_best_networks(data, baseline_data, output_path):
     plt.close()
 
 
+def plot_best_training_time(data, baseline_data, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    plt.figure()
+
+    labels = ["baseline"]
+    t_times = [baseline_data["training_time"][-1]]
+
+    for exp_name, exp_data in data.items():
+
+        run_data = exp_data[0]
+        t_times.append(run_data["training_time"])
+        labels.append("\n".join(exp_name.split("_")[1:]))
+
+    plt.bar(labels, t_times)
+    plt.ylabel("Training Time (Sec.)")
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+
+
 def plot_scaling_number_of_evaluations(experiments, output_path):
     output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
     output_path = os.path.join(output_path, output_file_name)
@@ -635,7 +660,7 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
 
         bests_data = {}
         for best_name in experiments["bests"]:
-            hists_path = os.path.join(module_path, "best", best_name, "history")
+            hists_path = os.path.join(module_path, "best", best_name, "logs", "history")
             hists = [name for name in os.listdir(hists_path) if "json" in name]
             bests_data[best_name] = [
                 load_json(os.path.join(hists_path, h)) for h in hists
@@ -681,6 +706,7 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
     # plot best
     if bests_data is not None:
         plot_best_networks(bests_data, baseline_data, bests_output_path)
+        plot_best_training_time(bests_data, baseline_data, bests_output_path)
 
 
 def main():
