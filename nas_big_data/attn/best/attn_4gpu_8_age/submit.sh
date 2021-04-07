@@ -8,4 +8,4 @@ ACTIVATE_PYTHON_ENV="/lus/theta-fs0/projects/datascience/regele/thetagpu/testdh/
 echo "Script to activate Python env: $ACTIVATE_PYTHON_ENV"
 source $ACTIVATE_PYTHON_ENV
 
-python train.py
+python train.py > output.txt

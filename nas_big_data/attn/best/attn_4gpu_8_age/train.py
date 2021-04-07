@@ -8,10 +8,10 @@ horovodrun -np 4 python -m deephyper.benchmark.nas.covertype.train
 import os
 import numpy as np
 import tensorflow as tf
-from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import balanced_accuracy_score, confusion_matrix, classification_report
 
 from nas_big_data.attn.problem_agebo import Problem
-from nas_big_data.attn.load_data import load_data, load_data_h5
+from nas_big_data.attn.load_data import load_data_h5
 from deephyper.nas.run.tf_distributed import run
 from deephyper.nas.run.util import create_dir
 
@@ -22,7 +22,6 @@ fname = HERE.split("/")[-1]
 output_dir = "logs"
 create_dir(output_dir)
 
-# Problem.load_data(load_data)
 config = Problem.space
 
 config["log_dir"] = output_dir
@@ -39,12 +38,12 @@ config["hyperparameters"]["callbacks"]["ModelCheckpoint"] = dict(
 
 # Search
 config["loss"] = "categorical_crossentropy"
-config["hyperparameters"]["learning_rate"] = 0.0012755195
-config["hyperparameters"]["batch_size"] = 118
+config["hyperparameters"]["learning_rate"] = 0.0038737749
+config["hyperparameters"]["batch_size"] = 1985
 config["hyperparameters"]["optimizer"] = "adagrad"
-config["hyperparameters"]["patience_ReduceLROnPlateau"] = 6
-config["hyperparameters"]["patience_EarlyStopping"] = 26
-config["arch_seq"] = [325, 0, 310, 1, 1, 233, 1, 1, 0, 81, 1, 35, 0, 0, 234, 1, 0, 1]
+config["hyperparameters"]["patience_ReduceLROnPlateau"] = 10
+config["hyperparameters"]["patience_EarlyStopping"] = 20
+config["arch_seq"] = [369, 1, 212, 0, 1, 317, 1, 0, 0, 375, 0, 94, 1, 1, 104, 1, 0, 1]
 
 run(config)
 
@@ -53,8 +52,12 @@ X_test, y_test = load_data_h5("test")
 model = tf.keras.models.load_model(f"best_model_{fname}.h5")
 
 y_pred = model.predict(X_test)
-y_pred = (y_pred > 0.5).astype(int)
-bal_acc = balanced_accuracy_score(y_test, y_pred)
+y_pred = np.argmax(y_pred, axis=1)
+y_test_label = np.argmax(y_test, axis=1)
+bal_acc = balanced_accuracy_score(y_test_label, y_pred)
+
+print(confusion_matrix(y_test_label, y_pred))
+print(classification_report(y_test_label, y_pred))
 
 score = model.evaluate(X_test, y_test)
 score.append(bal_acc)
