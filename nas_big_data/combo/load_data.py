@@ -91,5 +91,15 @@ def test_load_data_cache():
     dur = t2 - t1
     print("Cache call 2 loading: ", dur) # -> 2 sec
 
+
+def load_data_dummy():
+    shapes = [(942,), (3839,), (3839,)]
+    X_train = []
+    for s in shapes:
+        X_train.append(np.zeros((1, *s)))
+    y_train = np.zeros((1,1))
+    return (X_train, y_train), (X_train, y_train)
+
+
 if __name__ == "__main__":
     load_data()
