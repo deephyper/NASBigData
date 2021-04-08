@@ -14,7 +14,7 @@ automl = autosklearn.regression.AutoSklearnRegressor(
     per_run_time_limit=30,
     tmp_folder=os.path.join(HERE, 'autosklearn_regression_example_tmp'),
     output_folder=os.path.join(HERE, 'autosklearn_regression_example_out'),
-    memory_limit = 50 * 1024 # 50 GB
+    memory_limit = 100 * 1024 # 100 GB
 )
 
 (X_train, y_train), _ = load_data()
