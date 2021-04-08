@@ -14,6 +14,7 @@ automl = autosklearn.classification.AutoSklearnClassifier(
     per_run_time_limit=30,
     tmp_folder=os.path.join(HERE, 'autosklearn_classification_example_tmp'),
     output_folder=os.path.join(HERE, 'autosklearn_classification_example_out'),
+    memory_limit = 50 * 1024 # 50 GB
 )
 
 X_train, y_train = load_data_h5(split="train")
