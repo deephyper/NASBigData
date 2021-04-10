@@ -1,5 +1,7 @@
 # AgEBO-Tabular
 
+[![DOI](https://zenodo.org/badge/279793726.svg)](https://zenodo.org/badge/latestdoi/279793726)
+
 Aging Evolution with Bayesian Optimization (AgEBO) is a nested-distributed algorithm to generate better neural architectures. AgEBO advantages are:
 
 - the parallel evaluation of neural networks on computing ressources (e.g., cores, gpu, nodes).
