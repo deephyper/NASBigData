@@ -1,0 +1,1 @@
+{"0":{"arch_seq":"[179, 0, 350, 1, 0, 328, 1, 0, 1, 106, 1, 384, 1, 0, 45, 1, 1, 0]","batch_size":1772,"learning_rate":0.0062622901,"optimizer":"adadelta","patience_EarlyStopping":13,"patience_ReduceLROnPlateau":26,"objective":0.9952517748,"elapsed_sec":10091.6864385605}}
