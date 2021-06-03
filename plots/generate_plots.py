@@ -6,7 +6,9 @@ from datetime import datetime
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import seaborn as sns
 import numpy as np
+from scipy.spatial import distance
 import pandas as pd
 import yaml
 
@@ -18,21 +20,24 @@ except ImportError:
 from deephyper.nas.run.util import create_dir
 
 METRIC = None
-METRIC_TO_LABEL ={
+METRIC_TO_LABEL = {
     "val_r2": "Validation $R^2$",
     "val_auc": "Validation AUC",
     "val_acc": "Validation accuracy",
-    "val_aucpr": "Validation AUC Precision-Recall",
-    "val_auroc": "Validation AU ROC"
+    "val_aucpr": "Validation AUC PR",
+    "val_auroc": "Validation AU ROC",
 }
 METRIC_LIMITS = []
 EXPNAME_TO_LABEL = {}
+EXPNAME_BEST_TO_LABEL = {}
 TMIN, TMAX = 0, 3600 * 3
 
 width = 8
 height = width / 1.618
-fontsize = 18
-legend_font_size = 12
+fontsize = 25
+legend_font_size = 18
+# fontsize = 18
+# legend_font_size = 12
 matplotlib.rcParams.update(
     {
         "font.size": fontsize,
@@ -43,11 +48,22 @@ matplotlib.rcParams.update(
         "figure.edgecolor": "white",
         "xtick.labelsize": fontsize,
         "ytick.labelsize": fontsize,
+        "lines.linewidth": 3,
     }
 )
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILE_EXTENSION = "pdf"
+
+
+@ticker.FuncFormatter
+def hour_major_formatter(x, pos):
+    x = float(f"{x/3600:.1f}")
+    if x % 1 == 0:
+        x = str(int(x))
+    else:
+        x = f"{x:.1f}"
+    return x
 
 
 def yaml_load(path):
@@ -147,6 +163,90 @@ def plot_training_time(data, exp_path):
     plt.close()
 
 
+def plot_diversity_of_arch_seq(data, exp_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(exp_path, output_file_name)
+
+    t0 = data["t0"]
+
+    x_times = np.array([t for t in data["results"].elapsed_sec])/3600
+    if "arch_seq" in data["results"].columns:
+        archs = np.array([json.loads(arch) for arch in data["results"].arch_seq])
+    else:
+        archs = data["results"].to_numpy()[:,:-2]
+
+    # PCA
+    y = np.array(archs)
+    from sklearn import decomposition
+
+    pca = decomposition.PCA(n_components=2)
+    y = pca.fit_transform(archs)
+
+    # print(pca.explained_variance_)
+    # print(pca.explained_variance_ratio_)
+    # print("Cum variance: ", pca.explained_variance_ratio_.cumsum()[1])
+
+    # UMAP
+    # import umap
+
+    # T-SNE
+    # from sklearn.manifold import TSNE
+    # tsne = TSNE()
+    # y = tsne.fit_transform(archs)
+
+    fig = plt.figure()
+    # ax = fig.add_subplot(projection='3d')
+    # plt.sca(ax)
+
+    plt.scatter(y[:,0], y[:,1], c=x_times)
+    # ax.scatter(y[:,0], y[:,1], y[:, 2], s=2, alpha=0.8, c=x_times)
+    # plt.xlim(0, 3600 * 3)
+    # plt.ylabel("Training Time (Sec.)")
+    # plt.xlabel("Time (Sec.)")
+    # plt.grid()
+    plt.colorbar()
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+
+def plot_diversity2_of_arch_seq(data, exp_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(exp_path, output_file_name)
+
+    step = 3600/2
+    times = np.array([t for t in data["results"].elapsed_sec])#/3600
+    if "arch_seq" in data["results"].columns:
+        archs = np.array([json.loads(arch) for arch in data["results"].arch_seq])
+    else:
+        archs = data["results"].to_numpy()[:,:-2]
+
+
+    x, y = [], []
+    for i in range(int(3600*3/step)+1):
+        t1 = i*step
+        t2 = (i+1)*step
+        selection = np.logical_and(t1 <= times, times < t2)
+        arch_selec = archs[selection, :]
+        # print(f"{int(t1)}-{int(t2)}:", np.shape(archs), np.shape(arch_selec))
+        t = (t2+t1)/2
+        arch_mean = np.mean(arch_selec, axis=0)
+        arch_var = np.sum([distance.cosine(arch_mean, a) for a in arch_selec])
+        x.append(t)
+        y.append(arch_var)
+
+    plt.figure()
+
+    plt.plot(x, y)
+    plt.xlim(0, 3600 * 3)
+    plt.ylabel("Diversity")
+    plt.xlabel("Time (Sec.)")
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+
 def output_best_architecture(data, output_path):
     df = data["results"]
     i = df.objective.argmax()
@@ -173,7 +273,7 @@ def output_best_architecture(data, output_path):
     n_epochs_trained = None
     for d in data["history"]:
         if str(d["arch_seq"]) == arch_seq:
-            training_time = d["training_time"]/60
+            training_time = d["training_time"] / 60
             n_epochs_trained = len(d["loss"])
 
     data = {
@@ -181,7 +281,7 @@ def output_best_architecture(data, output_path):
         "elapsed_time": elapsed_time,
         "arch_seq": arch_seq,
         "training_time": training_time,
-        "n_epochs_trained": n_epochs_trained
+        "n_epochs_trained": n_epochs_trained,
     }
 
     if hp_names is not None:
@@ -192,6 +292,9 @@ def output_best_architecture(data, output_path):
     output_path = os.path.join(output_path, "best_configuration.yaml")
     with open(output_path, "w") as f:
         yaml.dump(data, f)
+
+    exp_name = output_path.split("/")[-2]
+    print(EXPNAME_TO_LABEL[exp_name], " -> ", f"{objective:.3f} {METRIC}")
 
 
 def generate_plot_from_exp(dataset, experiment, experiment_folder, output_path):
@@ -206,6 +309,8 @@ def generate_plot_from_exp(dataset, experiment, experiment_folder, output_path):
     # List of plots
     plot_objective(data, output_path)
     plot_training_time(data, output_path)
+    # plot_diversity_of_arch_seq(data, output_path)
+    # plot_diversity2_of_arch_seq(data, output_path)
 
     # output best architecture and hp
     output_best_architecture(data, output_path)
@@ -221,7 +326,7 @@ def plot_objective_multi(experiments, output_path, baseline_data=None):
             res.append(max(res[-1], value))
         return res
 
-    xmin, xmax = 0, 3600 * 3
+    xmin, xmax = TMIN, TMAX
     plt.figure()
 
     if baseline_data:
@@ -240,20 +345,69 @@ def plot_objective_multi(experiments, output_path, baseline_data=None):
         x_times = [d["time"].timestamp() - t0.timestamp() for d in data["history"]]
         y_val_r2 = [d[METRIC][-1] for d in data["history"]]
 
-        plt.plot(x_times, only_max(y_val_r2), label=EXPNAME_TO_LABEL[exp])
+        x_times, y_val_r2 = list(zip(*sorted(zip(x_times, y_val_r2), key=lambda t: t[0])))
+
+        plt.plot(x_times, only_max(y_val_r2), label=EXPNAME_TO_LABEL[exp], alpha=0.8)
 
     plt.ylabel(METRIC_TO_LABEL[METRIC])
     plt.xlabel("Time (Hour)")
     plt.ylim(*METRIC_LIMITS)
     plt.xlim(xmin, xmax)
 
-    @ticker.FuncFormatter
-    def major_formatter(x, pos):
-        return f"{x/3600:.1f}"
-
     ax = plt.gca()
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1800))
-    ax.xaxis.set_major_formatter(major_formatter)
+    ax.xaxis.set_major_formatter(hour_major_formatter)
+
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.04))
+    # ax.xaxis.set_major_formatter(hour_major_formatter)
+
+    plt.grid()
+    plt.legend(fontsize=legend_font_size, ncol=2)
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+
+def plot_diversity2_multi(experiments, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    xmin, xmax = TMIN, TMAX
+    step = 3600/6
+
+    plt.figure()
+
+    for exp, data in experiments.items():
+
+        times = np.array([t for t in data["results"].elapsed_sec])
+        if "arch_seq" in data["results"].columns:
+            archs = np.array([json.loads(arch) for arch in data["results"].arch_seq])
+        else:
+            archs = data["results"].to_numpy()[:,:-2]
+
+        x, y = [], []
+        for i in range(int(TMAX/step)+1):
+            t1, t2 = i*step, (i+1)*step
+            t = (t2+t1)/2
+            selection = np.logical_and(t1 <= times, times < t2)
+            arch_selec = archs[selection, :]
+            if len(arch_selec) == 0:
+                break
+            arch_mean = np.mean(arch_selec, axis=0)
+            arch_var = np.sum([distance.cosine(arch_mean, a) for a in arch_selec])
+            # arch_var = np.sum([distance.euclidean(arch_mean, a) for a in arch_selec])
+            x.append(t)
+            y.append(arch_var)
+
+        plt.plot(x, y, label=EXPNAME_TO_LABEL[exp])
+
+    plt.ylabel("Diversity")
+    plt.xlabel("Time (Hour)")
+    plt.xlim(xmin, xmax)
+
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1800*2))
+    ax.xaxis.set_major_formatter(hour_major_formatter)
 
     plt.grid()
     plt.legend(fontsize=legend_font_size)
@@ -321,12 +475,14 @@ def plot_number_of_evaluations(experiments, output_path):
     for exp, data in experiments.items():
 
         number_evaluations.append(len(data["history"]))
-        exps.append("\n".join(exp.split("_")[1:]))
+        # exps.append("\n".join(exp.split("_")[1:]))
+        exps.append(EXPNAME_TO_LABEL[exp])
 
         print(exps[-1].replace("\n", " "), " -> ", number_evaluations[-1], "evaluations")
 
     plt.bar(exps, number_evaluations)
     plt.ylabel("#Evaluations")
+    plt.xticks(rotation=20)
     plt.grid()
     plt.tight_layout()
     plt.savefig(output_path)
@@ -337,18 +493,22 @@ def plot_usage_training_time(experiments, output_path):
     output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
     output_path = os.path.join(output_path, output_file_name)
 
-    max_time_usage = 8 * 8 * 3600 * 3
+    # max_time_usage = 8 * 8 * 3600 * 3
+    wall_time = 3600 * 3
 
     plt.figure()
 
     exps = []
     training_times = []
     for exp, data in experiments.items():
-        t0 = data["t0"]
         ngpus = int(exp.split("gpu")[0].split("_")[-1])
+        nnodes = int(exp.split("_")[2])
+        max_time_usage = 8 * nnodes * wall_time
         cum_training_time = sum([d["training_time"] * ngpus for d in data["history"]])
-        exps.append("\n".join(exp.split("_")[1:]))
+        # exps.append("\n".join(exp.split("_")[1:]))
+        exps.append(EXPNAME_TO_LABEL[exp])
         training_times.append(cum_training_time / max_time_usage * 100)
+        print(f"Usage: {exps[-1]} -> {training_times[-1]}%")
 
         serie_times = [d["training_time"] for d in data["history"]]
         mean_time = np.mean(serie_times)
@@ -357,9 +517,49 @@ def plot_usage_training_time(experiments, output_path):
 
     plt.bar(exps, training_times)
     plt.ylim(0, 100)
-    plt.ylabel("Time (Sec.)")
+    plt.ylabel("Time in Training (%)")
+    plt.xticks(rotation=35)
     plt.grid()
     plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+def plot_distribution_training_duration(experiments, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    wall_time = 3600 * 3
+
+    plt.figure()
+
+    df = pd.DataFrame(data={
+        "training_time": [],
+        "exp_name": []
+    })
+
+    for exp, data in experiments.items():
+        serie_times = [d["training_time"]/60 for d in data["history"]]
+        serie_objectives = [d[METRIC][-1] for d in data["history"]]
+        # plt.hist(serie_times, bins=20, density=True, label=exp, alpha=0.5)
+        newdf = pd.DataFrame(data={
+            "training_time": serie_times,
+            "exp_name": [EXPNAME_TO_LABEL[exp] for _ in range(len(serie_times))],
+            "objective": serie_objectives
+        })
+        # newdf = newdf.sort_values("objective", ascending=False).iloc[:100]
+        # print(newdf.objective[:10])
+        df = pd.concat([df, newdf], ignore_index=True)
+
+    # sns.displot(df, x="training_time", hue="exp_name", kind="kde")
+    sns.boxplot(x="exp_name", y="training_time", data=df)
+
+    plt.xlabel("")
+    plt.ylabel("Training Time (min.)")
+    plt.yscale("log")
+    plt.grid()
+    plt.xticks(rotation=35)
+    plt.tight_layout()
+    # plt.legend()
     plt.savefig(output_path)
     plt.close()
 
@@ -377,30 +577,47 @@ def plot_count_arch_better_than_baseline(experiments, output_path, baseline_data
 
     for exp_name, exp_data in experiments.items():
 
-        x = exp_data["results"]["elapsed_sec"]
-        y = (exp_data["results"]["objective"] > base_r2).astype(int).tolist()
+        t0 = exp_data["t0"]
+        x = [d["time"].timestamp() - t0.timestamp() for d in exp_data["history"] if d[METRIC][-1] > base_r2]
+        y = [1 for d in exp_data["history"] if d[METRIC][-1] > base_r2]
+        arch_list = [d["arch_seq"] for d in exp_data["history"] if d[METRIC][-1] > base_r2]
 
-        x, y = zip(*sorted(zip(x,y), key=lambda t: t[0]))
-        y = np.cumsum(y)
-        plt.plot(x, y, label=EXPNAME_TO_LABEL[exp_name])
+        if len(x) > 0:
+            x, y, arch_list = zip(*sorted(zip(x, y, arch_list), key=lambda t: t[0]))
+        else:
+            x, y = [], []
+        x, y = list(x), list(y)
+
+        seen_arch_seq = []
+        for i, arch_seq in enumerate(arch_list):
+            if arch_seq in seen_arch_seq:
+                y[i] = 0
+            else:
+                seen_arch_seq.append(arch_seq)
+
+        y = list(np.cumsum(y))
+        plt.plot([0]+x, [0]+y, label=EXPNAME_TO_LABEL[exp_name])
 
     plt.ylabel(f"Arch > {base_r2:.2f}")
     plt.xlabel("Time (Hour)")
     plt.xlim(TMIN, TMAX)
 
-    @ticker.FuncFormatter
-    def major_formatter(x, pos):
-        return f"{x/3600:.1f}"
-
     ax = plt.gca()
     ax.xaxis.set_major_locator(ticker.MultipleLocator(1800))
-    ax.xaxis.set_major_formatter(major_formatter)
+    ax.xaxis.set_major_formatter(hour_major_formatter)
 
-    plt.legend(fontsize=legend_font_size)
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(150))
+
+    plt.legend(fontsize=legend_font_size, ncol=1)
     plt.grid()
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
+
+
+# def moving_average(x, w):
+#     # x = np.concatenate([np.array([x[0] for i in range(w-1)]), x])
+#     return np.convolve(x, np.ones(w), 'same') / w
 
 
 def plot_best_networks(data, baseline_data, output_path):
@@ -419,12 +636,23 @@ def plot_best_networks(data, baseline_data, output_path):
     for exp_name, exp_data in data.items():
 
         run_data = exp_data[0]
-        plt.plot(list(range(len(run_data[METRIC]))), run_data[METRIC], label=exp_name)
+        plt.plot(
+            list(range(len(run_data[METRIC]))),
+            run_data[METRIC],
+            label=EXPNAME_BEST_TO_LABEL[exp_name],
+        )
 
     plt.ylabel(METRIC_TO_LABEL[METRIC])
-    plt.xlabel("epochs")
+    plt.xlabel("Epochs")
     plt.ylim(*METRIC_LIMITS)
-    plt.legend(fontsize=legend_font_size)
+
+    ax = plt.gca()
+    # ax.xaxis.set_major_locator(ticker.MultipleLocator(1800))
+    # ax.xaxis.set_major_formatter(hour_major_formatter)
+
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(0.04))
+
+    plt.legend(fontsize=legend_font_size, ncol=2)
     plt.grid()
     plt.tight_layout()
     plt.savefig(output_path)
@@ -454,6 +682,50 @@ def plot_best_training_time(data, baseline_data, output_path):
     plt.close()
 
 
+def plot_time_to_solution(experiments, output_path, baseline_data=None):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    if baseline_data is None:
+        return
+    solution_to_reach = max(baseline_data[METRIC])
+
+    def hash(x):
+        return "_".join([str(xi) for xi in x])
+
+    for exp_name, exp_data in experiments.items():
+        t0 = exp_data["t0"]
+        x = [d["time"].timestamp() - t0.timestamp() for d in exp_data["history"] if d[METRIC][-1] > solution_to_reach]
+        y = [1 for d in exp_data["history"] if d[METRIC][-1] > solution_to_reach]
+
+        if len(x) > 0:
+            x, y = zip(*sorted(zip(x, y), key=lambda t: t[0]))
+        else:
+            x, y = [], []
+        x, y = list(x), list(y)
+
+        time_to_solution = x
+        # print(time_to_solution)
+        if len(time_to_solution) == 0:
+            time_to_solution = TMAX
+        else:
+            time_to_solution = x[0]
+        print(
+            EXPNAME_TO_LABEL[exp_name], " -> ", f"{time_to_solution/60:.2f} min to {solution_to_reach:.3f}"
+        )
+
+        # Training time best arch
+        i_max = exp_data["results"].objective.idxmax()
+        if "arch_seq" in exp_data["results"].columns:
+            arch_seq = hash(json.loads(exp_data["results"].iloc[i_max].arch_seq))
+        else:
+            arch_seq = hash(exp_data["results"].iloc[i_max].to_numpy()[:-2].astype(int))
+        for hist in exp_data["history"]:
+            if hash(hist["arch_seq"]) == arch_seq:
+                training_time = hist["training_time"]
+                n_epochs = len(hist["val_loss"])
+                break
+        print(f"Training time best arch ({EXPNAME_TO_LABEL[exp_name]}): {training_time/60:.2f} min. and {training_time/60/n_epochs:.2f} min/epoch")
 
 def plot_scaling_number_of_evaluations(experiments, output_path):
     output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
@@ -472,8 +744,8 @@ def plot_scaling_number_of_evaluations(experiments, output_path):
         data_plot[alg_name][0].append(n_gpus)
         data_plot[alg_name][1].append(n_evals)
 
-    for algo, (x,y) in data_plot.items():
-        plt.plot(x, y, label=algo, marker='o')
+    for algo, (x, y) in data_plot.items():
+        plt.plot(x, y, label=algo, marker="o")
 
     plt.xscale("log", base=2)
     # plt.yscale("log", base=2)
@@ -512,8 +784,8 @@ def plot_scaling_best_objective(experiments, output_path):
         data_plot[alg_name][0].append(n_gpus)
         data_plot[alg_name][1].append(best_objective)
 
-    for algo, (x,y) in data_plot.items():
-        plt.plot(x, y, label=algo, marker='o')
+    for algo, (x, y) in data_plot.items():
+        plt.plot(x, y, label=algo, marker="o")
 
     plt.xscale("log", base=2)
 
@@ -542,7 +814,6 @@ def plot_scaling_time_to_solution(experiments, output_path, baseline_data=None):
         return
     solution_to_reach = max(baseline_data[METRIC])
 
-
     plt.figure()
 
     exp_names = {exp_name.split("_")[-1] for exp_name in experiments}
@@ -551,18 +822,19 @@ def plot_scaling_time_to_solution(experiments, output_path, baseline_data=None):
     for exp_name, exp_data in experiments.items():
         alg_name = exp_name.split("_")[-1]
         n_gpus = int(exp_name.split("_")[1][:-3])
-        time_to_solution = exp_data["results"][exp_data["results"].objective >= solution_to_reach]
+        time_to_solution = exp_data["results"][
+            exp_data["results"].objective >= solution_to_reach
+        ]
         if len(time_to_solution) == 0:
             time_to_solution = 3600 * 3
         else:
             time_to_solution = time_to_solution.elapsed_sec.iloc[0]
 
-
         data_plot[alg_name][0].append(n_gpus)
         data_plot[alg_name][1].append(time_to_solution)
 
-    for algo, (x,y) in data_plot.items():
-        plt.plot(x, y, label=algo, marker='o')
+    for algo, (x, y) in data_plot.items():
+        plt.plot(x, y, label=algo, marker="o")
 
     # plt.yscale("log", base=10)
     plt.xscale("log", base=2)
@@ -578,8 +850,11 @@ def plot_scaling_time_to_solution(experiments, output_path, baseline_data=None):
     @ticker.FuncFormatter
     def major_formatter(x, pos):
         return f"{x/3600:.2f}"
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(3600/2))
-    ax.yaxis.set_major_locator(ticker.FixedLocator([0]+[3600/8*(2**i) for i in range(5)] + [3600*3]))
+
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(3600 / 2))
+    ax.yaxis.set_major_locator(
+        ticker.FixedLocator([0] + [3600 / 8 * (2 ** i) for i in range(5)] + [3600 * 3])
+    )
     ax.yaxis.set_major_formatter(major_formatter)
 
     plt.ylabel("Time To Solution (Hours)")
@@ -610,16 +885,20 @@ def plot_scaling_training_time(experiments, output_path):
         data_plot[alg_name][1].append(training_time)
 
     i = 1
-    for algo, (x,y) in data_plot.items():
-        plt.subplot(1,len(data_plot),i)
-        plt.boxplot(x=y, positions=x, labels=[f"{algo}{xi}" for xi in x], widths=[0.5*xi for xi in x])
+    for algo, (x, y) in data_plot.items():
+        plt.subplot(1, len(data_plot), i)
+        plt.boxplot(
+            x=y,
+            positions=x,
+            labels=[f"{algo}{xi}" for xi in x],
+            widths=[0.5 * xi for xi in x],
+        )
 
         plt.xscale("log", base=2)
 
         @ticker.FuncFormatter
         def major_formatter(x, pos):
             return str(int(x))
-
 
         ax = plt.gca()
         ax.xaxis.set_major_locator(ticker.FixedLocator(x))
@@ -628,6 +907,7 @@ def plot_scaling_training_time(experiments, output_path):
         @ticker.FuncFormatter
         def major_formatter(x, pos):
             return f"{x/60:.2f}"
+
         # ax.yaxis.set_major_locator(ticker.MultipleLocator(3600/2))
         ax.yaxis.set_major_formatter(major_formatter)
 
@@ -640,6 +920,64 @@ def plot_scaling_training_time(experiments, output_path):
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
+
+
+def plot_scaling_n_parameters(experiments, output_path):
+    output_file_name = f"{inspect.stack()[0][3]}.{FILE_EXTENSION}"
+    output_path = os.path.join(output_path, output_file_name)
+
+    plt.figure()
+
+    exp_names = {exp_name.split("_")[-1] for exp_name in experiments}
+    data_plot = {exp_name: ([], []) for exp_name in exp_names}
+
+    for exp_name, exp_data in experiments.items():
+        alg_name = exp_name.split("_")[-1]
+        n_gpus = int(exp_name.split("_")[1][:-3])
+        training_time = [d["n_parameters"] for d in exp_data["history"]]
+        print(EXPNAME_TO_LABEL[exp_name], " -> ", f"{int(np.mean(training_time)/1e6)}", " param")
+
+        data_plot[alg_name][0].append(n_gpus)
+        data_plot[alg_name][1].append(training_time)
+
+    i = 1
+    for algo, (x, y) in data_plot.items():
+        plt.subplot(1, len(data_plot), i)
+        plt.boxplot(
+            x=y,
+            positions=x,
+            labels=[f"{algo}{xi}" for xi in x],
+            widths=[0.5 * xi for xi in x],
+        )
+        # plt.hist(x=y, label=)
+
+        plt.xscale("log", base=2)
+
+        @ticker.FuncFormatter
+        def major_formatter(x, pos):
+            return str(int(x))
+
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(ticker.FixedLocator(x))
+        ax.xaxis.set_major_formatter(major_formatter)
+
+        # @ticker.FuncFormatter
+        # def major_formatter(x, pos):
+        #     return f"{x/60:.2f}"
+        # ax.yaxis.set_major_locator(ticker.MultipleLocator(3600/2))
+        # ax.yaxis.set_major_formatter(major_formatter)
+
+        plt.ylabel("#Parameters")
+        plt.xlabel(f"#GPUs per Eval\n{algo}")
+        # plt.ylim(top=1e7)
+        # plt.yscale("log")
+        plt.grid()
+        i += 1
+
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
 
 def generate_plot_from_dataset(dataset, experiments, output_path):
 
@@ -660,6 +998,7 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
 
         bests_data = {}
         for best_name in experiments["bests"]:
+            EXPNAME_BEST_TO_LABEL[best_name] = experiments["bests"][best_name]
             hists_path = os.path.join(module_path, "best", best_name, "logs", "history")
             hists = [name for name in os.listdir(hists_path) if "json" in name]
             bests_data[best_name] = [
@@ -682,6 +1021,9 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
     plot_scatter_objective_multi(experiments, output_path)
     plot_usage_training_time(experiments, output_path)
     plot_count_arch_better_than_baseline(experiments, output_path, baseline_data)
+    plot_time_to_solution(experiments, output_path, baseline_data)
+    # plot_diversity2_multi(experiments, output_path)
+    plot_distribution_training_duration(experiments, output_path)
 
     # scaling plots
     num_workers_to_keep = 16
@@ -692,7 +1034,7 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
         n_gpus_per_eval, n_nodes = int(tmp[0][:-3]), int(tmp[1])
         workers_per_node = n_gpus_per_node / n_gpus_per_eval
         num_workers = workers_per_node * n_nodes
-        if (num_workers == num_workers_to_keep):
+        if num_workers == num_workers_to_keep:
             scaling_experiments[exp_name] = exp_data
 
     if len(scaling_experiments) > 0:
@@ -700,8 +1042,11 @@ def generate_plot_from_dataset(dataset, experiments, output_path):
         create_dir(scaling_output_path)
         plot_scaling_number_of_evaluations(scaling_experiments, scaling_output_path)
         plot_scaling_best_objective(scaling_experiments, scaling_output_path)
-        plot_scaling_time_to_solution(scaling_experiments, scaling_output_path, baseline_data)
+        plot_scaling_time_to_solution(
+            scaling_experiments, scaling_output_path, baseline_data
+        )
         plot_scaling_training_time(scaling_experiments, scaling_output_path)
+        plot_scaling_n_parameters(scaling_experiments, scaling_output_path)
 
     # plot best
     if bests_data is not None:
@@ -728,7 +1073,9 @@ def main():
 
         for experiment in experiments[dataset]["experiments"]:
 
-            EXPNAME_TO_LABEL[experiment] = experiments[dataset]["experiments"].get(experiment, experiment)
+            EXPNAME_TO_LABEL[experiment] = experiments[dataset]["experiments"].get(
+                experiment, experiment
+            )
 
             experiment_path = os.path.join(dataset_path, experiment)
             create_dir(experiment_path)
