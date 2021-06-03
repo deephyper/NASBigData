@@ -4,7 +4,10 @@ setup(
     name="nas_big_data",
     packages=find_packages(),
     install_requires=[
+        "deephyper",
         "deepspace>=0.0.3",
-        "deephyper"
+        # "autosklearn",
+        # "emcee",
+        # "pyDOE",
         ],
 )

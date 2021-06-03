@@ -9,164 +9,373 @@ Aging Evolution with Bayesian Optimization (AgEBO) is a nested-distributed algor
 - the jointly optimization of hyperparameters and neural architectures which enables the automatic adaptation of data-parallelism setting to avoid a loss of accuracy.
 
 This repo contains the experimental materials linked to the implementation of AgEBO algorithm in DeepHyper's repo.
-The version of DeepHyper used is: [ad5a0f3391b6afca4358c66123246d0086c02f0f](https://github.com/deephyper/deephyper/commit/ad5a0f3391b6afca4358c66123246d0086c02f0f)
+The version of DeepHyper used is: [e8e07e2db54dceed83b626104b66a07509a95a8c](https://github.com/deephyper/deephyper/commit/e8e07e2db54dceed83b626104b66a07509a95a8c)
+
+## Environment information
+
+The experiments were executed on the [ThetaGPU](https://www.alcf.anl.gov/alcf-resources/theta) supercomputer.
+
+* OS Login Node: Ubuntu 18.04.5 LTS (GNU/Linux 4.15.0-112-generic x86_64)
+* OS Compute Node: NVIDIA DGX Server Version 4.99.9 (GNU/Linux 5.3.0-62-generic x86_64)
+* Python: Miniconda Python 3.8
+
+For more information about the environment refer to the `infos-sc21.txt` which was generated with the provided SC [Author-Kit](https://github.com/SC-Tech-Program/Author-Kit.)
 
 ## Installation
 
-To install DeepHyper follow the instructions given at: [deephyper.readthedocs.io](https://deephyper.readthedocs.io/)
+Install Miniconda: [conda.io](https://docs.conda.io/en/latest/miniconda.html). Then create a Python environment:
 
-After installing DeepHyper, install this repo by running the following commands in your terminal:
+```console
+conda create -n dh-env python=3.8
 
-```bash
+```
+
+Then install Deephyper. To have the detailed installation process of DeepHyper follow the instructions given at: [deephyper.readthedocs.io](https://deephyper.readthedocs.io/). We propose the following commands:
+
+```console
+conda activate dh-env
+conda install gxx_linux-64 gcc_linux-64 -y
+git clone https://github.com/deephyper/deephyper.git
+cd deephyper/
+git checkout e8e07e2db54dceed83b626104b66a07509a95a8c
+pip install -e.
+pip install ray[default]
+```
+
+Finally, install the NASBigData package::
+
+```console
+cd ..
 git clone https://github.com/deephyper/NASBigData.git
 cd NASBigData/
 pip install -e.
 ```
 
-### Installation of DeepHyper on Cooley
+## Download and Generate datasets from ECP-Candle
 
-On Cooley at ALCF:
+Have the following dependencies installed:
 
-Inside `~/.soft.cooley`:
-
-```text
-+mvapich2
-@default
+```console
+pip install numba
+pip install astropy
+pip install patsy
+pip install statsmodels
 ```
 
-Then:
+For the Combo dataset run:
 
-```bash
-soft add +gcc-6.3.0
-HOROVOD_WITH_TENSORFLOW=1 pip install horovod[tensorflow]
+```console
+cd NASBigData/nas_big_data/combo/
+sh download_data.sh
 ```
 
-Having miniconda installed, execute:
+For the Attn dataset run:
 
-```bash
-cd project/datascience/
-conda create -p dh-env python=3.7
+```console
+cd NASBigData/nas_big_data/attn/
+sh download_data.sh
 ```
 
-Go on compute node, `qsub -I -A datascience -n 1 -t 30 -q debug`, then:
+## How it works
 
-```bash
-cd project/datascience/
-conda activate dh-env/
-conda install -c anaconda tensorflow=1.15
-git clone https://github.com/deephyper/deephyper.git
-cd deephyper/
-pip install -e .
+The AgEBO algorithm (Aging Evolution with Bayesian Optimisation) was directly added to the DeepHyper project and can be found [here](https://github.com/deephyper/deephyper/blob/e8e07e2db54dceed83b626104b66a07509a95a8c/deephyper/search/nas/agebo.py#L90).
+
+To submit and run an experiment on the ThetaGPU system the following command is used:
+
+```console
+deephyper ray-submit nas agebo -w combo_2gpu_8_agebo_sync -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh --n-jobs 16
 ```
 
-After intsalling DeepHyper:
+where
+
+* `-w` denotes the name of the experiment.
+* `-n` denotes the number of nodes requested.
+* `-t` denotes the allocation time (minutes) requested.
+* `-A` denotes the project's name at the ALCF.
+* `-q` denotes the queue's name.
+* `--problem` is the Python package import to the Problem definition (which define the hyperparameter and neural architecture search space, the loss to optimise, etc.).
+* `--run` is the Python package import to the run function (which evaluate each configuration sampled by the search).
+* `--max-evals` denotes the maximum number of evaluations to performe (often affected to an high value so that the search uses the whole allocation time).
+* `--num-cpus-per-task` the number of cores used by each evaluation.
+* `--num-gpus-per-task` the number of GPUs used by each evaluation.
+* `--as` the absolute PATH to the activation script `SetUpEnv.sh` (used to initialise the good environment on compute nodes when the allocation is starting).
+* `--n-jobs` the number of processes that the surrogate model of the Bayesian optimiser can use.
+
+
+The `deephyper ray-submit ...` command will create a directory with `-w` name and automatically generate a submission script for Cobalt (the scheduler at the ALCF). Such a submission script will be composed of the following.
+
+The initialisation of the environment:
 
 ```bash
-pip install autogluon
-conda install -c anaconda mxnet
+#!/bin/bash -x
+#COBALT -A datascience
+#COBALT -n 8
+#COBALT -q full-node
+#COBALT -t 180
+
+mkdir infos && cd infos
+
+ACTIVATE_PYTHON_ENV="/lus/grand/projects/datascience/regele/thetagpu/agebo/SetUpEnv.sh"
+echo "Script to activate Python env: $ACTIVATE_PYTHON_ENV"
+source $ACTIVATE_PYTHON_ENV
+
 ```
 
-For cuda: `pip install mxnet-cu101`
-
-## Main commands to reproduce
-
-## Balsam launcher
-
-Before creating balsam-applications or jobs you need to create the balsam database and start it:
+The initialisation of the Ray cluster:
 
 ```bash
-balsam init mydatabase
-source balsamactivate mydatabase
+# USER CONFIGURATION
+CPUS_PER_NODE=8
+GPUS_PER_NODE=8
+
+
+# Script to launch Ray cluster
+# Getting the node names
+mapfile -t nodes_array -d '\n' < $COBALT_NODEFILE
+
+head_node=${nodes_array[0]}
+head_node_ip=$(dig $head_node a +short | awk 'FNR==2')
+
+# if we detect a space character in the head node IP, we'll
+# convert it to an ipv4 address. This step is optional.
+if [[ "$head_node_ip" == *" "* ]]; then
+IFS=' ' read -ra ADDR <<<"$head_node_ip"
+if [[ ${#ADDR[0]} -gt 16 ]]; then
+  head_node_ip=${ADDR[1]}
+else
+  head_node_ip=${ADDR[0]}
+fi
+echo "IPV6 address detected. We split the IPV4 address as $head_node_ip"
+fi
+
+# Starting the Ray Head Node
+port=6379
+ip_head=$head_node_ip:$port
+export ip_head
+echo "IP Head: $ip_head"
+
+echo "Starting HEAD at $head_node"
+ssh -tt $head_node_ip "source $ACTIVATE_PYTHON_ENV; \
+    ray start --head --node-ip-address=$head_node_ip --port=$port \
+    --num-cpus $CPUS_PER_NODE --num-gpus $GPUS_PER_NODE --block" &
+
+# optional, though may be useful in certain versions of Ray < 1.0.
+sleep 10
+
+# number of nodes other than the head node
+worker_num=$((${#nodes_array[*]} - 1))
+echo "$worker_num workers"
+
+for ((i = 1; i <= worker_num; i++)); do
+    node_i=${nodes_array[$i]}
+    node_i_ip=$(dig $node_i a +short | awk 'FNR==1')
+    echo "Starting WORKER $i at $node_i with ip=$node_i_ip"
+    ssh -tt $node_i_ip "source $ACTIVATE_PYTHON_ENV; \
+        ray start --address $ip_head \
+        --num-cpus $CPUS_PER_NODE --num-gpus $GPUS_PER_NODE" --block &
+    sleep 5
+done
+
 ```
 
-### Aging Evolution for neural architecture search
-
-Create the `AgE` application for Balsam on Theta:
+The DeepHyper command to start the search:
 
 ```bash
-balsam app --name AgE --exe "$(which python) -m deephyper.search.nas.regevo --evaluator balsam --run deephyper.nas.run.horovod.run"
+deephyper nas agebo --evaluator ray --ray-address auto \
+    --problem nas_big_data.combo.problem_agebo.Problem \
+    --run deephyper.nas.run.tf_distributed.run \
+    --max-evals 10000 \
+    --num-cpus-per-task 2 \
+    --num-gpus-per-task 2 \
+    --n-jobs=16
 ```
 
-Then create a job for a specific experiment (here models are evaluated with 8 ranks in parallel):
+## Commands to reproduce
 
-```bash
-balsam job --name covertype_age_129 --workflow covertype_age_129 --app AgE --args "--problem nas_big_data.covertype.problem_ae.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+The experiments are name as `{dataset}_{x}gpu_{y}_{z}_{other}` where
+
+* `dataset` is the name of the corresponding dataset (e.g., combo or attn).
+* `x` is the number of GPUs used for each trained neural network (e.g., 1, 2, 4, 8).
+* `y` is the number of nodes used for the allocation (e.g., 1, 2, 4, 8, 16).
+* `z` is the name of the algorithm (e.g., age, agebo).
+* `other` are other keywords used to differentiate some experiments (e.g., kappa value)>
+
+We give the full set of commands used to run our experiments.
+
+### Combo dataset
+
+* combo_1gpu_8_age
+
+```console
+deephyper ray-submit nas regevo -w combo_1gpu_8_age -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.alpha.run --max-evals 10000 --num-cpus-per-task 1 --num-gpus-per-task 1 -as ../SetUpEnv.sh
 ```
 
-Finally, launch this experiment (for Theta):
+* combo_2gpu_8_age
 
-```bash
-balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --wf-filter covertype_age_129
+```console
+deephyper ray-submit nas regevo -w combo_2gpu_8_age -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh
 ```
 
-### Aging Evolution with Bayesian Optimization (AgEBO)
+* combo_8gpu_8_age
 
-Create the `AgEBO` application for Balsam on Theta:
-
-```bash
-balsam app --name AgEBO --exe "$(which python) -m deephyper.search.nas.agebov3 --evaluator balsam --run deephyper.nas.run.horovod.run"
+```console
+deephyper ray-submit nas regevo -w combo_8gpu_8_age -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 8 --num-gpus-per-task 8 -as ../SetUpEnv.sh
 ```
 
-Then create a job for a specific experiment (here models are evaluated with 8 ranks in parallel):
+* combo_8gpu_8_agebo
 
-```bash
-balsam job --name covertype_agebo_129 --workflow covertype_agebo_129 --app AgE --args "--problem nas_big_data.covertype.problem_agebov3.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+```console
+deephyper ray-submit nas agebo -w combo_8gpu_8_agebo -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 8 --num-gpus-per-task 8 -as ../SetUpEnv.sh --n-jobs 16
 ```
 
-Finally, launch this experiment (for Theta):
+* combo_2gpu_8_agebo
 
-```bash
-balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --wf-filter covertype_agebo_129
+```console
+deephyper ray-submit nas agebo -w combo_2gpu_8_agebo -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh --n-jobs 16
 ```
 
-### Aging Evolution for joint optimization
+* combo_1gpu_2_age
 
-Aging Evolution to optimize both hyperparameters and neural architectures, local testing with dummy evaluation function:
-
-```bash
-python -m nas_big_data.search.ae_hpo_nas --run nas_big_data.run.quick.run --problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000
+```console
+deephyper ray-submit nas regevo -w combo_1gpu_2_age -n 2 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.alpha.run --max-evals 10000 --num-cpus-per-task 1 --num-gpus-per-task 1 -as ../SetUpEnv.sh
 ```
 
-Create the `AgEHPNAS` application for Balsam on Theta:
+* combo_2gpu_4_age
 
-```bash
-balsam app --name AgEHPNAS --exe "$(which python) -m nas_big_data.search.ae_hpo_nas --evaluator balsam --run deephyper.nas.run.horovod.run"
+```console
+deephyper ray-submit nas regevo -w combo_2gpu_4_age -n 4 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh
 ```
 
-Then create a job for a specific experiment:
+* combo_4gpu_8_age
 
-```bash
-balsam job --name covertype_agehpnas_129 --workflow covertype_agehpnas_129 --app AgEHPNAS --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+```console
+deephyper ray-submit nas regevo -w combo_4gpu_8_age -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 4 --num-gpus-per-task 4 -as ../SetUpEnv.sh
 ```
 
-Finally, launch this experiment (for Theta):
+* combo_8gpu_16_age
 
-```bash
-balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --wf-filter covertype_agehpnas_129
+```console
+deephyper ray-submit nas regevo -w combo_8gpu_16_age -n 16 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 8 --num-gpus-per-task 8 -as ../SetUpEnv.sh
 ```
 
-### Bayesian Optimization for joint optimization
+* combo_1gpu_2_agebo
 
-Bayesian Optimization to optimize both hyperparameters and neural architectures, local testing with dummy evaluation function:
-
-```bash
-python -m nas_big_data.search.bo_hpo_nas --run nas_big_data.run.quick.run --problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000
+```console
+deephyper ray-submit nas agebo -w combo_1gpu_2_agebo -n 2 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.alpha.run --max-evals 10000 --num-cpus-per-task 1 --num-gpus-per-task 1 -as ../SetUpEnv.sh --n-jobs 16
 ```
 
-Create the `BO` application for Balsam on Theta:
+* combo_2gpu_4_agebo
 
-```bash
-balsam app --name BO --exe "$(which python) -m nas_big_data.search.bo_hpo_nas --evaluator balsam --run deephyper.nas.run.horovod.run"
+```console
+deephyper ray-submit nas agebo -w combo_2gpu_4_agebo -n 4 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh --n-jobs 16
 ```
 
-Then create a job for a specific experiment:
+* combo_4gpu_8_agebo
 
-```bash
-balsam job --name covertype_bo_129 --workflow covertype_bo_129 --app BO --args "--problem nas_big_data.covertype.problem_agebov4_skopt.Problem --max-evals 1000 --num-threads-per-rank 16 --num-ranks-per-node 8"
+```console
+deephyper ray-submit nas agebo -w combo_4gpu_8_agebo -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 4 --num-gpus-per-task 4 -as ../SetUpEnv.sh --n-jobs 16
 ```
 
-Finally, launch this experiment (for Theta):
+* combo_8gpu_16_agebo
 
-```bash
-balsam submit-launch -n 129 -t 180 -A $project_name -q default --job-mode mpi --wf-filter covertype_bo_129
+```console
+deephyper ray-submit nas agebo -w combo_8gpu_16_agebo -n 16 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 8 --num-gpus-per-task 8 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+* combo_4gpu_8_agebo_1_96
+
+```console
+deephyper ray-submit nas agebo -w combo_4gpu_8_agebo_1_96 -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 4 --num-gpus-per-task 4 -as ../SetUpEnv.sh --n-jobs 16 --kappa 1.96
+```
+
+* combo_4gpu_8_agebo_19_6
+
+```console
+deephyper ray-submit nas agebo -w combo_4gpu_8_agebo_19_6 -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 4 --num-gpus-per-task 4 -as ../SetUpEnv.sh --n-jobs 16 --kappa 19.6
+```
+
+* combo_1gpu_8_agebo
+
+```console
+deephyper ray-submit nas agebo -w combo_1gpu_8_agebo -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.alpha.run --max-evals 10000 --num-cpus-per-task 1 --num-gpus-per-task 1 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+* combo_4gpu_8_ambsmixed
+
+```console
+deephyper ray-submit nas ambsmixed -w combo_4gpu_8_ambsmixed -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 4 --num-gpus-per-task 4 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+* combo_4gpu_8_regevomixed
+
+```console
+deephyper ray-submit nas regevomixed -w combo_4gpu_8_regevomixed -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 4 --num-gpus-per-task 4 -as ../SetUpEnv.sh
+```
+
+* combo_2gpu_1_age
+
+```console
+deephyper ray-submit nas regevo -w combo_2gpu_1_age -n 1 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh
+```
+
+* combo_2gpu_2_age
+
+```console
+deephyper ray-submit nas regevo -w combo_2gpu_2_age -n 2 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh
+```
+
+* combo_2gpu_16_age
+
+```console
+deephyper ray-submit nas regevo -w combo_2gpu_16_age -n 16 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_ae.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh
+```
+
+* combo_2gpu_1_agebo
+
+```console
+deephyper ray-submit nas agebo -w combo_2gpu_1_agebo -n 1 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+* combo_2gpu_2_agebo
+
+```console
+deephyper ray-submit nas agebo -w combo_2gpu_2_agebo -n 2 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+* combo_2gpu_16_agebo
+
+```console
+deephyper ray-submit nas agebo -w combo_2gpu_16_agebo -n 16 -t 180 -A datascience -q full-node --problem nas_big_data.combo.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+### Attn dataset
+
+* attn_1gpu_8_age
+
+```console
+deephyper ray-submit nas regevo -w attn_1gpu_8_age -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.attn.problem_ae.Problem --run deephyper.nas.run.alpha.run --max-evals 10000 --num-cpus-per-task 1 --num-gpus-per-task 1 -as ../SetUpEnv.sh
+```
+
+* attn_1gpu_8_agebo
+
+```console
+deephyper ray-submit nas agebo -w attn_1gpu_8_agebo -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.attn.problem_agebo.Problem --run deephyper.nas.run.alpha.run --max-evals 10000 --num-cpus-per-task 1 --num-gpus-per-task 1 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+* attn_2gpu_8_agebo
+
+```console
+deephyper ray-submit nas agebo -w attn_2gpu_8_agebo -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.attn.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 2 --num-gpus-per-task 2 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+* attn_4gpu_8_agebo
+
+```console
+deephyper ray-submit nas agebo -w attn_4gpu_8_agebo -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.attn.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 4 --num-gpus-per-task 4 -as ../SetUpEnv.sh --n-jobs 16
+```
+
+* attn_8gpu_8_agebo
+
+```console
+deephyper ray-submit nas agebo -w attn_8gpu_8_agebo -n 8 -t 180 -A datascience -q full-node --problem nas_big_data.attn.problem_agebo.Problem --run deephyper.nas.run.tf_distributed.run --max-evals 10000 --num-cpus-per-task 8 --num-gpus-per-task 8 -as ../SetUpEnv.sh --n-jobs 16
 ```
