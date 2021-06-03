@@ -2,6 +2,8 @@
 
 [![DOI](https://zenodo.org/badge/279793726.svg)](https://zenodo.org/badge/latestdoi/279793726)
 
+The code is available at [NASBigData Github repo](https://github.com/deephyper/NASBigData).
+
 Aging Evolution with Bayesian Optimization (AgEBO) is a nested-distributed algorithm to generate better neural architectures. AgEBO advantages are:
 
 - the parallel evaluation of neural networks on computing ressources (e.g., cores, gpu, nodes).
@@ -191,6 +193,8 @@ deephyper nas agebo --evaluator ray --ray-address auto \
 ```
 
 ## Commands to reproduce
+
+All the commands can be found in the [NASBigData repo](https://github.com/deephyper/NASBigData).
 
 The experiments are name as `{dataset}_{x}gpu_{y}_{z}_{other}` where
 
